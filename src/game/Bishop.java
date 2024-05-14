@@ -1,6 +1,7 @@
 package game;
 
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Bishop implements Piece {
 	
@@ -10,13 +11,14 @@ public class Bishop implements Piece {
 	
 	private PieceColor color;//color of the piece
 	
-	private Map<Integer, Integer> targeting;// Rows and columns being targeted
+	private Set<Coordinate> targeting;// Rows and columns being targeted
 
 	public Bishop(int x, int y, PieceColor color) {
 		this.x = x;
 		this.y = y;
 		this.color = color;
 		this.type = PieceType.BISHOP;
+		this.targeting = new HashSet<>();
 	}
 
 	/**
@@ -80,7 +82,7 @@ public class Bishop implements Piece {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Map<Integer, Integer> getTargeting() {
+	public Set<Coordinate> getTargeting() {
 		return this.targeting;
 	}
 
@@ -88,7 +90,7 @@ public class Bishop implements Piece {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void setTargeting(Map<Integer, Integer> update) {
+	public void setTargeting(Set<Coordinate> update) {
 		this.targeting = update;
 	}
 	/**
@@ -98,6 +100,7 @@ public class Bishop implements Piece {
 	public void updateTargeting(Piece[][] board) {
 		
 		targeting.clear();
+		targeting = new HashSet<>();
 		
 		CheckDiags.checkDiags(board, color, targeting, x, y);
 	}
@@ -119,6 +122,11 @@ public class Bishop implements Piece {
 				   this.y == piece.getY() && 
 				   this.type == piece.getType() &&
 				   this.color == piece.getColor();
+	}
+	
+	@Override
+	public String toString() {
+		return type.toString() + x + y;
 	}
 
 }

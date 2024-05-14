@@ -1,6 +1,7 @@
 package game;
 
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 public class King implements Piece{
 	
@@ -10,13 +11,14 @@ public class King implements Piece{
 	
 	private PieceColor color;//color of the piece
 	
-	private Map<Integer, Integer> targeting;// Rows and columns being targeted
+	private Set<Coordinate> targeting;// Rows and columns being targeted
 
 	public King(int x, int y, PieceColor color) {
 		this.x = x;
 		this.y = y;
 		this.color = color;
 		this.type = PieceType.KING;
+		this.targeting = new HashSet<>();
 	}
 
 	/**
@@ -80,7 +82,7 @@ public class King implements Piece{
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Map<Integer, Integer> getTargeting() {
+	public Set<Coordinate> getTargeting() {
 		return this.targeting;
 	}
 	
@@ -88,7 +90,7 @@ public class King implements Piece{
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void setTargeting(Map<Integer, Integer> update) {
+	public void setTargeting(Set<Coordinate> update) {
 		this.targeting = update;
 	}
 	
@@ -98,6 +100,7 @@ public class King implements Piece{
 	@Override
 	public void updateTargeting(Piece[][] board) {
 		targeting.clear();
+		targeting = new HashSet<>();
 		
 		if(y + 1 <= board.length - 1) { // if not on the upper edge,
 									   // search the upper pieces
@@ -122,9 +125,11 @@ public class King implements Piece{
 		// check forward/back
 		if(row != y) {
 			
-			if(board[x] == null) {
+			if(board[x] != null) {
 				if(!sameColor(board[x]))
-					this.targeting.put(x, row);
+					this.targeting.add(new Coordinate(x, row));
+			} else {
+				this.targeting.add(new Coordinate(x, row));
 			}
 		}
 		
@@ -132,13 +137,18 @@ public class King implements Piece{
 		if(!(x - 1 < 0)) {
 			if(board[x - 1] != null) {
 				if(!sameColor(board[x - 1])) 
-					targeting.put(x - 1, row); // left
+					this.targeting.add(new Coordinate(x - 1, row)); // left
+			}else {
+				this.targeting.add(new Coordinate(x - 1, row)); // left
 			}
 		}
 		if(!(x + 1 == board.length)) {
 			if(board[x + 1] != null) {
 				if(!sameColor(board[x + 1]))
-					targeting.put(x + 1, row); // right
+					targeting.add(new Coordinate(x + 1, row)); // right
+			} else {
+				targeting.add(new Coordinate(x + 1, row)); // right
+
 			}
 		}
 		
@@ -163,4 +173,8 @@ public class King implements Piece{
 				   this.color == piece.getColor();
 	}
 
+	@Override
+	public String toString() {
+		return type.toString() + x + y;
+	}
 }

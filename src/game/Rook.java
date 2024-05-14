@@ -1,6 +1,7 @@
 package game;
 
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Rook implements Piece {
 	
@@ -10,13 +11,14 @@ public class Rook implements Piece {
 	
 	private PieceColor color;//color of the piece
 	
-	private Map<Integer, Integer> targeting;// Rows and columns being targeted
+	private Set<Coordinate> targeting;// Rows and columns being targeted
 
 	public Rook(int x, int y, PieceColor color) {
 		this.x = x;
 		this.y = y;
 		this.color = color;
 		this.type = PieceType.ROOK;
+		this.targeting = new HashSet<>();
 	}
 
 	/**
@@ -80,7 +82,7 @@ public class Rook implements Piece {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Map<Integer, Integer> getTargeting() {
+	public Set<Coordinate> getTargeting() {
 		return this.targeting;
 	}
 
@@ -88,7 +90,7 @@ public class Rook implements Piece {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void setTargeting(Map<Integer, Integer> update) {
+	public void setTargeting(Set<Coordinate> update) {
 		this.targeting = update;
 	}
 	
@@ -98,9 +100,9 @@ public class Rook implements Piece {
 	@Override
 	public void updateTargeting(Piece[][] board) {
 		
-		targeting.clear();
+		this.targeting.clear();
 		
-		CheckLines.checkLines(board, color, targeting, x, y);
+		CheckLines.checkLines(board, color, this.targeting, x, y);
 	}
 	
 	
@@ -121,5 +123,10 @@ public class Rook implements Piece {
 				   this.y == piece.getY() && 
 				   this.type == piece.getType() &&
 				   this.color == piece.getColor();
+	}
+	
+	@Override
+	public String toString() {
+		return type.toString() + x + y;
 	}
 }

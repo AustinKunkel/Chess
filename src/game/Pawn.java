@@ -1,22 +1,24 @@
 package game;
-
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Pawn implements Piece{
 	
-	private int x,y;//position in the array
+	private int x,y, move;//position in the array
 	
 	private final PieceType type;
 	
 	private PieceColor color;//color of the piece
 	
-	private Map<Integer, Integer> targeting;
+	private Set<Coordinate> targeting;
 
 	public Pawn(int x, int y, PieceColor color) {
 		this.x = x;
 		this.y = y;
 		this.color = color;
 		this.type = PieceType.PAWN;
+		this.move = 0;
+		this.targeting = new HashSet<>();
 	}
 	
 	/**
@@ -59,6 +61,8 @@ public class Pawn implements Piece{
 	public void setPos(int x, int y) {
 		this.setX(x);
 		this.setY(y);
+		//inherently moves forward when setting position
+		this.move++;
 	}
 	
 	/**
@@ -81,7 +85,7 @@ public class Pawn implements Piece{
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Map<Integer, Integer> getTargeting() {
+	public Set<Coordinate> getTargeting() {
 		return this.targeting;
 	}
 	
@@ -89,7 +93,7 @@ public class Pawn implements Piece{
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void setTargeting(Map<Integer, Integer> update) {
+	public void setTargeting(Set<Coordinate> update) {
 		this.targeting = update;
 	}
 	
@@ -100,25 +104,56 @@ public class Pawn implements Piece{
 	public void updateTargeting(Piece[][] board) {
 		targeting.clear();
 		
-		if(!(y + 1 == board.length)) {
-			
+		int factor = 1;
+		int border = board.length;
+		
+		if(this.color == PieceColor.BLACK) {
+			factor = -1;
+			border = -1;
+		}
+		
+		// checks the spots forward
+		// and diagonal when applicable
+		checkForward(factor, border, board);
+		
+		// now we check for 2 spaces in front when its the first move
+		if(this.move == 0) {
+			factor = factor * 2;
+			checkForward(factor, border, board);
+		}	
+	}
+	
+	/**
+	 * Helper function for updateTargeting.
+	 * 
+	 * Will check the forward (or reverse if black)
+	 * and will add the spaces to targeting if able
+	 * @param factor
+	 * @param border
+	 * @param board
+	 */
+	private void checkForward(int factor, int border, Piece[][] board) {
+		if(!(y + factor == border)) {
 			// check forward to see if a piece isnt there:
-			if(board[y + 1][x] == null) {
-				this.targeting.put(x, y + 1);
+			if(board[y + factor][x] == null) {
+				this.targeting.add(new Coordinate(x, y + factor));
 			}
 			
-			// check diagonal to see if piece is there:
-			if(!(x - 1 < 0)) {
-				if(board[y + 1][x - 1] != null) {
-					if(!sameColor(board[y + 1][x - 1]))
-						targeting.put(x - 1, y + 1); // left
+			// if we're only moving forward 1 space
+			if(Math.abs(factor) <= 1) {
+				// check diagonal to see if piece is there:
+				if(!(x - 1 < 0)) {
+					if(board[y + factor][x - 1] != null) {
+						if(!sameColor(board[y + factor][x - 1]))
+							targeting.add(new Coordinate(x - 1, y + factor)); // left
+					}
 				}
-			}
-			if(!(x + 1 == board[0].length)) {
-				if(board[y + 1][x + 1] != null) {
-					if(!sameColor(board[y + 1][x + 1]))
-						targeting.put(x + 1, y + 1); // right
-				}
+				if(!(x + 1 == board[0].length)) {
+					if(board[y + factor][x + 1] != null) {
+						if(!sameColor(board[y + factor][x + 1]))
+							targeting.add(new Coordinate(x + 1, y + factor)); // right
+					}
+				}			
 			}
 			
 		}

@@ -1,6 +1,7 @@
 package game;
 
-import java.util.Map;
+import java.util.List;
+import java.util.Set;
 
 public interface Piece {
 
@@ -54,13 +55,13 @@ public interface Piece {
 	 * 
 	 * @return a Map<Integer, Integer> of the pieces being targeted
 	 */
-	public Map<Integer, Integer> getTargeting();
+	public Set<Coordinate> getTargeting();
 	
 	/**
 	 * Sets the targeting map to the new one
 	 * @param update
 	 */
-	public void setTargeting(Map<Integer, Integer> update);
+	public void setTargeting(Set<Coordinate> update);
 	
 	/**
 	 * updates the piece's targeting list

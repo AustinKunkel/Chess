@@ -19,7 +19,7 @@ public enum PieceType {
 		case ROOK:
 			return "R";
 		case KNIGHT:
-			return "K";
+			return "N";
 		case BISHOP:
 			return "B";
 		case QUEEN:

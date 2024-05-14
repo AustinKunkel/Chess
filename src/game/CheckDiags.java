@@ -1,11 +1,11 @@
 package game;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CheckDiags {
 	
-	private static Map<Integer, Integer> canTarget;
+	private static Set<Coordinate> canTarget;
 	
 	private static Piece breakPiece = null;
 	
@@ -20,13 +20,15 @@ public class CheckDiags {
 	 * @param targeting
 	 * @param x
 	 * @param y
-	 * @return Map<Integer, Integer> of places the piece CAN target, but are not directly.
+	 * @return Set<Coordinate> of places the piece CAN target, but are not directly.
 	 */
-	public static Map<Integer, Integer> checkDiags(Piece[][] board,
+	public static Set<Coordinate> checkDiags(Piece[][] board,
 								  PieceColor color,
-								  Map<Integer, Integer> targeting,
+								  Set<Coordinate> targeting,
 								  int x,
 								  int y) {
+		
+		canTarget = new HashSet<>();
 		
 		bL(board, x, y, targeting, color,1);
 		
@@ -51,7 +53,7 @@ public class CheckDiags {
 	 * @param color
 	 * @param iteration
 	 */
-	private static boolean bL(Piece[][] board, int x, int y,  Map<Integer, Integer> targeting, PieceColor color, int iteration) {
+	private static boolean bL(Piece[][] board, int x, int y,  Set<Coordinate> targeting, PieceColor color, int iteration) {
 		int tempX = x - 1;
 		int tempY = y - 1;
 		
@@ -60,7 +62,7 @@ public class CheckDiags {
 			
 			if(currPiece != null) {
 				if(!sameColor(currPiece, color)) {
-					targeting.put(tempX, tempY);
+					targeting.add(new Coordinate(tempX, tempY));
 					
 					//if king is in check
 					if(currPiece.getType() == PieceType.KING) {
@@ -75,7 +77,7 @@ public class CheckDiags {
 				break;
 			}
 			
-			targeting.put(tempX, tempY);
+			targeting.add(new Coordinate(tempX, tempY));
 			tempX--;
 			tempY--;
 		}
@@ -106,7 +108,7 @@ public class CheckDiags {
 	 * @param color
 	 * @param iteration
 	 */
-	private static boolean tL(Piece[][] board, int x, int y,  Map<Integer, Integer> targeting, PieceColor color, int iteration) {
+	private static boolean tL(Piece[][] board, int x, int y,  Set<Coordinate> targeting, PieceColor color, int iteration) {
 		int tempX = x - 1;
 		int tempY = y + 1;
 		
@@ -115,7 +117,7 @@ public class CheckDiags {
 			
 			if(currPiece != null) {
 				if(!sameColor(currPiece, color)) {
-					targeting.put(tempX, tempY);
+					targeting.add(new Coordinate(tempX, tempY));
 					
 					// if king is in check
 					if(currPiece.getType() == PieceType.KING) {
@@ -131,7 +133,7 @@ public class CheckDiags {
 				break;
 			}
 			
-			targeting.put(tempX, tempY);
+			targeting.add(new Coordinate(tempX, tempY));
 			tempX--;
 			tempY++;
 		}
@@ -162,7 +164,7 @@ public class CheckDiags {
 	 * @param color
 	 * @param iteration
 	 */
-	private static boolean tR(Piece[][] board, int x, int y,  Map<Integer, Integer> targeting, PieceColor color, int iteration) {
+	private static boolean tR(Piece[][] board, int x, int y,  Set<Coordinate> targeting, PieceColor color, int iteration) {
 		int tempX = x + 1;
 		int tempY = y + 1;
 		
@@ -171,7 +173,7 @@ public class CheckDiags {
 			
 			if(currPiece != null) {
 				if(!sameColor(currPiece, color)) {
-					targeting.put(tempX, tempY);
+					targeting.add(new Coordinate(tempX, tempY));
 					
 					//if king is in check
 					if(currPiece.getType() == PieceType.KING) {
@@ -187,7 +189,7 @@ public class CheckDiags {
 				break;
 			}
 			
-			targeting.put(tempX, tempY);
+			targeting.add(new Coordinate(tempX, tempY));
 			tempX++;
 			tempY++;
 		}
@@ -219,7 +221,7 @@ public class CheckDiags {
 	 * @param iteration
 	 * @return true if king is in check
 	 */
-	private static boolean bR(Piece[][] board, int x, int y,  Map<Integer, Integer> targeting, PieceColor color, int iteration) {
+	private static boolean bR(Piece[][] board, int x, int y,  Set<Coordinate> targeting, PieceColor color, int iteration) {
 		int tempX = x + 1;
 		int tempY = y - 1;
 		
@@ -228,7 +230,7 @@ public class CheckDiags {
 			
 			if(currPiece != null) {
 				if(!sameColor(currPiece, color)) {
-					targeting.put(tempX, tempY);	
+					targeting.add(new Coordinate(tempX, tempY));
 					
 					//if king is in check
 					if(currPiece.getType() == PieceType.KING) {
@@ -244,7 +246,7 @@ public class CheckDiags {
 				break;
 			}
 			
-			targeting.put(tempX, tempY);
+			targeting.add(new Coordinate(tempX, tempY));
 			tempX++;
 			tempY--;
 		}
@@ -271,17 +273,15 @@ public class CheckDiags {
 	 * keeps intersection of piece and targeting of piece
 	 * that can check king
 	 * @param piece
-	 * @param targeting => map of the piece that is targeting the king
+	 * @param targeting => Set of the piece that is targeting the king
 	 */
-	private static void updatePieceTargetingIfCheck(Piece piece, Map<Integer, Integer> targeting) {
-		Map<Integer, Integer> pieceTargeting = piece.getTargeting();
-		Map<Integer, Integer> intersection = new HashMap<>();
+	private static void updatePieceTargetingIfCheck(Piece piece, Set<Coordinate> targeting) {
+		Set<Coordinate> pieceTargeting = piece.getTargeting();
+		Set<Coordinate> intersection = new HashSet<>();
 		
-		for(Map.Entry<Integer, Integer> entry : targeting.entrySet()) {
-			if(pieceTargeting.containsKey(entry.getKey())) {
-				if(pieceTargeting.get(entry.getKey()) == entry.getValue()) {
-					intersection.put(entry.getKey(), entry.getValue());
-				}
+		for(Coordinate coord : targeting) {
+			if(pieceTargeting.contains(coord)) {
+				intersection.add(coord);
 			}	
 		}
 		
