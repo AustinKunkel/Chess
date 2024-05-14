@@ -84,7 +84,14 @@ public class Rook implements Piece {
 		return this.targeting;
 	}
 
-
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void setTargeting(Map<Integer, Integer> update) {
+		this.targeting = update;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */

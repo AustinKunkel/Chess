@@ -1,12 +1,28 @@
 package game;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class CheckDiags {
+	
+	private static Map<Integer, Integer> canTarget;
+	
+	private static Piece breakPiece = null;
+	
+	private static Piece currPiece = null;
 
 	public CheckDiags() {}
 	
-	public static void checkDiags(Piece[][] board,
+	/**
+	 * Iterates through each diagonal to check.
+	 * @param board
+	 * @param color
+	 * @param targeting
+	 * @param x
+	 * @param y
+	 * @return Map<Integer, Integer> of places the piece CAN target, but are not directly.
+	 */
+	public static Map<Integer, Integer> checkDiags(Piece[][] board,
 								  PieceColor color,
 								  Map<Integer, Integer> targeting,
 								  int x,
@@ -19,6 +35,8 @@ public class CheckDiags {
 		tR(board, x, y, targeting, color,1);
 		
 		bR(board, x, y, targeting, color,1);
+		
+		return canTarget;
 	}
 	
 	
@@ -33,16 +51,26 @@ public class CheckDiags {
 	 * @param color
 	 * @param iteration
 	 */
-	private static void bL(Piece[][] board, int x, int y,  Map<Integer, Integer> targeting, PieceColor color, int iteration) {
+	private static boolean bL(Piece[][] board, int x, int y,  Map<Integer, Integer> targeting, PieceColor color, int iteration) {
 		int tempX = x - 1;
 		int tempY = y - 1;
 		
 		while(tempX >= 0 && tempY >= 0) {
-			Piece piece = board[tempY][tempX];
+			currPiece = board[tempY][tempX];
 			
-			if(piece != null) {
-				if(!sameColor(piece, color)) {
+			if(currPiece != null) {
+				if(!sameColor(currPiece, color)) {
 					targeting.put(tempX, tempY);
+					
+					//if king is in check
+					if(currPiece.getType() == PieceType.KING) {
+						return true;
+					}
+					
+					//so we can keep track of the piece that we need to update
+					if(iteration < 2) {
+						breakPiece = currPiece;
+					}
 				}
 				break;
 			}
@@ -54,8 +82,17 @@ public class CheckDiags {
 		
 		if(iteration < 2) {
 			iteration++;
-			bL(board, tempX, tempY, targeting, color, iteration);
+			if(bL(board, tempX, tempY, canTarget, color, iteration)) {// if king is in check
+				if(breakPiece != null) {// and there was a piece before it
+					// update that piece's targeting 
+					updatePieceTargetingIfCheck(breakPiece, currPiece.getTargeting());
+				}	
+			}
 		}
+		
+		breakPiece = null;
+		
+		return false;
 	}
 	
 	/**
@@ -69,17 +106,28 @@ public class CheckDiags {
 	 * @param color
 	 * @param iteration
 	 */
-	private static void tL(Piece[][] board, int x, int y,  Map<Integer, Integer> targeting, PieceColor color, int iteration) {
+	private static boolean tL(Piece[][] board, int x, int y,  Map<Integer, Integer> targeting, PieceColor color, int iteration) {
 		int tempX = x - 1;
 		int tempY = y + 1;
 		
 		while(tempX >= 0 && tempY < board.length) {
-			Piece piece = board[tempY][tempX];
+			currPiece = board[tempY][tempX];
 			
-			if(piece != null) {
-				if(!sameColor(piece, color)) {
+			if(currPiece != null) {
+				if(!sameColor(currPiece, color)) {
 					targeting.put(tempX, tempY);
+					
+					// if king is in check
+					if(currPiece.getType() == PieceType.KING) {
+						return true;
+					}
+					
+					// so we can keep track of the piece that we need to update
+					if(iteration < 2) {
+						breakPiece = currPiece;
+					}
 				}
+				
 				break;
 			}
 			
@@ -90,8 +138,17 @@ public class CheckDiags {
 		
 		if(iteration < 2) {
 			iteration++;
-			tL(board, tempX, tempY, targeting, color, iteration);
+			if(tL(board, tempX, tempY, canTarget, color, iteration)) {// if king is in check
+				if(breakPiece != null) {// and there was a piece before it
+					// update that piece's targeting 
+					updatePieceTargetingIfCheck(breakPiece, currPiece.getTargeting());
+				}	
+			}
 		}
+		
+		breakPiece = null;
+		
+		return false;
 	}
 	
 	/**
@@ -105,17 +162,28 @@ public class CheckDiags {
 	 * @param color
 	 * @param iteration
 	 */
-	private static void tR(Piece[][] board, int x, int y,  Map<Integer, Integer> targeting, PieceColor color, int iteration) {
+	private static boolean tR(Piece[][] board, int x, int y,  Map<Integer, Integer> targeting, PieceColor color, int iteration) {
 		int tempX = x + 1;
 		int tempY = y + 1;
 		
 		while(tempX < board[0].length && tempY < board.length) {
-			Piece piece = board[tempY][tempX];
+			currPiece = board[tempY][tempX];
 			
-			if(piece != null) {
-				if(!sameColor(piece, color)) {
+			if(currPiece != null) {
+				if(!sameColor(currPiece, color)) {
 					targeting.put(tempX, tempY);
+					
+					//if king is in check
+					if(currPiece.getType() == PieceType.KING) {
+						return true;
+					}
+					
+					//so we can keep track of the piece that we need to update
+					if(iteration < 2) {
+						breakPiece = currPiece;
+					}
 				}
+
 				break;
 			}
 			
@@ -126,8 +194,17 @@ public class CheckDiags {
 		
 		if(iteration < 2) {
 			iteration++;
-			tR(board, tempX, tempY, targeting, color, iteration);
+			if(tR(board, tempX, tempY, canTarget, color, iteration)) {// if king is in check
+				if(breakPiece != null) {// and there was a piece before it
+					// update that piece's targeting 
+					updatePieceTargetingIfCheck(breakPiece, currPiece.getTargeting());
+				}	
+			}
 		}
+		
+		breakPiece = null;
+		
+		return false;
 	}
 	
 	/**
@@ -140,18 +217,30 @@ public class CheckDiags {
 	 * @param targeting
 	 * @param color
 	 * @param iteration
+	 * @return true if king is in check
 	 */
-	private static void bR(Piece[][] board, int x, int y,  Map<Integer, Integer> targeting, PieceColor color, int iteration) {
+	private static boolean bR(Piece[][] board, int x, int y,  Map<Integer, Integer> targeting, PieceColor color, int iteration) {
 		int tempX = x + 1;
 		int tempY = y - 1;
 		
 		while(tempX < board[0].length && tempY >= 0) {
-			Piece piece = board[tempY][tempX];
+			currPiece = board[tempY][tempX];
 			
-			if(piece != null) {
-				if(!sameColor(piece, color)) {
-					targeting.put(tempX, tempY);
+			if(currPiece != null) {
+				if(!sameColor(currPiece, color)) {
+					targeting.put(tempX, tempY);	
+					
+					//if king is in check
+					if(currPiece.getType() == PieceType.KING) {
+						return true;
+					}
+					
+					//so we can keep track of the piece that we need to change
+					if(iteration < 2) {
+						breakPiece = currPiece;
+					}
 				}
+
 				break;
 			}
 			
@@ -162,11 +251,41 @@ public class CheckDiags {
 		
 		if(iteration < 2) {
 			iteration++;
-			bR(board, tempX, tempY, targeting, color, iteration);
+			if(bR(board, tempX, tempY, canTarget, color, iteration)) {// if king is in check
+				if(breakPiece != null) {// and there was a piece before it
+					// update that piece's targeting 
+					updatePieceTargetingIfCheck(breakPiece, currPiece.getTargeting());
+				}	
+			}
 		}
+		
+		breakPiece = null;
+		
+		return false;
 	}
 	public static boolean sameColor(Piece piece, PieceColor color) {
 		return color == piece.getColor();
+	}
+	
+	/**
+	 * keeps intersection of piece and targeting of piece
+	 * that can check king
+	 * @param piece
+	 * @param targeting => map of the piece that is targeting the king
+	 */
+	private static void updatePieceTargetingIfCheck(Piece piece, Map<Integer, Integer> targeting) {
+		Map<Integer, Integer> pieceTargeting = piece.getTargeting();
+		Map<Integer, Integer> intersection = new HashMap<>();
+		
+		for(Map.Entry<Integer, Integer> entry : targeting.entrySet()) {
+			if(pieceTargeting.containsKey(entry.getKey())) {
+				if(pieceTargeting.get(entry.getKey()) == entry.getValue()) {
+					intersection.put(entry.getKey(), entry.getValue());
+				}
+			}	
+		}
+		
+		piece.setTargeting(intersection);
 	}
 
 }

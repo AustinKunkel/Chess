@@ -57,6 +57,12 @@ public interface Piece {
 	public Map<Integer, Integer> getTargeting();
 	
 	/**
+	 * Sets the targeting map to the new one
+	 * @param update
+	 */
+	public void setTargeting(Map<Integer, Integer> update);
+	
+	/**
 	 * updates the piece's targeting list
 	 * with the current spots its targeting.
 	 * @param board

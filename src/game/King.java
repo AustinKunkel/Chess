@@ -83,7 +83,15 @@ public class King implements Piece{
 	public Map<Integer, Integer> getTargeting() {
 		return this.targeting;
 	}
-
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void setTargeting(Map<Integer, Integer> update) {
+		this.targeting = update;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */

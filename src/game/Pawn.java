@@ -89,6 +89,14 @@ public class Pawn implements Piece{
 	 * {@inheritDoc}
 	 */
 	@Override
+	public void setTargeting(Map<Integer, Integer> update) {
+		this.targeting = update;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public void updateTargeting(Piece[][] board) {
 		targeting.clear();
 		

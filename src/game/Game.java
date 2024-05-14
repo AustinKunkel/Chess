@@ -1,6 +1,7 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +43,10 @@ public class Game {
 		// the check.
 		//
 		// if not possible in 1 move, checkmate
+		
+		// if the king can be put under check by a piece.
+		
+		// if checkList.size() > 0 => updateMoveIfInCheck();
 
 		
 	}
@@ -140,12 +145,15 @@ public class Game {
 		List<Piece> checkList = new ArrayList<>();
 		
 		for(Piece piece : allPieces) {
-		Map<Integer, Integer> targeting = piece.getTargeting();
-				
-			if(targeting.containsKey(king.getX())) {
-				if(targeting.get(king.getX()) == king.getY()) {
-					checkList.add(piece);
-				}
+			//makes sure that the pieces are not the same color
+			if(!king.sameColor(piece)) {
+				Map<Integer, Integer> targeting = piece.getTargeting();
+						
+					if(targeting.containsKey(king.getX())) {
+						if(targeting.get(king.getX()) == king.getY()) {
+							checkList.add(piece);
+						}
+					}
 			}
 		}
 		
@@ -153,13 +161,128 @@ public class Game {
 	}
 	
 	/**
+	 * Will iterate over available pieces and get all by specified color
+	 * @param color
+	 * @return List<Piece> of the piece's that are the color
+	 */
+	private List<Piece> getAllPieceByColor(PieceColor color) {
+		List<Piece> listofColor = new ArrayList<>();
+		for(Piece piece : allPieces) {
+			if(piece.getColor() == color) {
+				listofColor.add(piece);
+			}
+		}
+		return listofColor;
+	}
+	
+	/**
 	 * Updates ALL piece's targeting lists.
-	 * @return
 	 */
 	private void updateAllTargeted() {
 		for(Piece piece : allPieces) {
 			piece.updateTargeting(board);
 		}
+		
+	}
+	
+	/**
+	 * Goes through checklist and sees how the pieces can move if king
+	 * is in check
+	 * @param checkList
+	 * @param king
+	 * @return true if there is a place to move; false otherwise
+	 */
+	private boolean updateMoveIfInCheck(List<Piece> checkList, Piece king) {
+		
+		boolean flag = true;
+		
+		List<Piece> listOfKingColor = getAllPieceByColor(king.getColor());
+		
+		listOfKingColor.remove(king);
+		// go through each piece that is currently targeting king
+		// and update the list of pieces that can move out of the
+		// way
+		for(Piece piece : checkList) {
+			Map<Integer, Integer> kingTargeting = king.getTargeting();
+			Map<Integer, Integer> pieceTargeting = piece.getTargeting();
+			
+			// iterates through piece's targeting.
+			// will see if it is in king's targeting. will then remove that spot
+			// from the king's targeting.
+				
+				// check if king can move
+				boolean kingCanMove = updateKingMoveIfInCheck(pieceTargeting, kingTargeting);
+				
+				//update piece's targeting to see if it can move to block
+				boolean pieceCanMove = updatePieceMoveIfInCheck(listOfKingColor, pieceTargeting);
+				
+				if(!(kingCanMove && pieceCanMove)) {
+					flag = false;
+				} else {
+					flag = true;
+				}
+		}
+		return flag;
+	}
+	
+	/**
+	 * helper function for updateMoveIfInCheck
+	 * 
+	 * Updates the king's moves if it is in check.
+	 * Does this by getting places where it cannot move
+	 * @param entry
+	 * @param kingTargeting
+	 * @return true if king has place to go
+	 */
+	private boolean updateKingMoveIfInCheck(Map<Integer, Integer> pieceTargeting, Map<Integer, Integer> kingTargeting) {
+		
+		for(Map.Entry<Integer, Integer> entry : pieceTargeting.entrySet()) {
+			if(kingTargeting.containsKey(entry.getKey())) {
+				if(kingTargeting.get(entry.getKey()) == entry.getValue()) {
+					kingTargeting.remove(entry.getKey());
+				}
+				
+			}		
+		}
+		return kingTargeting.size() > 0;	
+	}
+	
+	/**
+	 * helper function for updateMoveIfInCheck
+	 * 
+	 * Updated all of the piece's moves to see
+	 * if it can block a check.
+	 * Does this by getting the intersection of 
+	 * the entries and pieces
+	 * @param sameColor
+	 * @param entry
+	 * @return
+	 */
+	private boolean updatePieceMoveIfInCheck(List<Piece> sameColor, Map<Integer, Integer> targeting) {
+		boolean flag = true;
+	
+		for(Piece piece : sameColor) {
+			Map<Integer, Integer> intersection = new HashMap<>();
+			Map<Integer, Integer> pieceTargeting = piece.getTargeting();
+			
+			for(Map.Entry<Integer, Integer> entry : targeting.entrySet()) {
+				if(pieceTargeting.containsKey(entry.getKey())) {
+					if(pieceTargeting.get(entry.getKey()) == entry.getValue()) {
+						intersection.put(entry.getKey(), entry.getValue());
+					}
+				}		
+			}
+			
+			piece.setTargeting(intersection);
+			
+			if(intersection.size() <= 0) {
+				flag = false;
+			} else {
+				flag = true;
+			}
+		}
+		
+		return flag;
 	}
 }
 	
