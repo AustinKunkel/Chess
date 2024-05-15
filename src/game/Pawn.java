@@ -10,7 +10,8 @@ public class Pawn implements Piece{
 	
 	private PieceColor color;//color of the piece
 	
-	private Set<Coordinate> targeting;
+	private Set<Coordinate> targeting;// set of the spots it is targeting
+	private Set<Coordinate> sameTargeting;// set of the spots of the pieces its targeting
 
 	public Pawn(int x, int y, PieceColor color) {
 		this.x = x;
@@ -19,6 +20,7 @@ public class Pawn implements Piece{
 		this.type = PieceType.PAWN;
 		this.move = 0;
 		this.targeting = new HashSet<>();
+		this.sameTargeting = new HashSet<>();
 	}
 	
 	/**
@@ -97,12 +99,18 @@ public class Pawn implements Piece{
 		this.targeting = update;
 	}
 	
+	@Override
+	public Set<Coordinate> getSameColorTargeting() {
+		return this.sameTargeting;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public void updateTargeting(Piece[][] board) {
 		targeting.clear();
+		sameTargeting.clear();
 		
 		int factor = 1;
 		int border = board.length;
@@ -114,10 +122,10 @@ public class Pawn implements Piece{
 		
 		// checks the spots forward
 		// and diagonal when applicable
-		checkForward(factor, border, board);
+		boolean open = checkForward(factor, border, board);
 		
 		// now we check for 2 spaces in front when its the first move
-		if(this.move == 0) {
+		if(this.move == 0 && open) {
 			factor = factor * 2;
 			checkForward(factor, border, board);
 		}	
@@ -131,12 +139,16 @@ public class Pawn implements Piece{
 	 * @param factor
 	 * @param border
 	 * @param board
+	 * @return false if a piece is blocking the front
 	 */
-	private void checkForward(int factor, int border, Piece[][] board) {
+	private boolean checkForward(int factor, int border, Piece[][] board) {
+		boolean open = true;
 		if(!(y + factor == border)) {
 			// check forward to see if a piece isnt there:
 			if(board[y + factor][x] == null) {
 				this.targeting.add(new Coordinate(x, y + factor));
+			} else {
+				open = false;
 			}
 			
 			// if we're only moving forward 1 space
@@ -144,19 +156,27 @@ public class Pawn implements Piece{
 				// check diagonal to see if piece is there:
 				if(!(x - 1 < 0)) {
 					if(board[y + factor][x - 1] != null) {
-						if(!sameColor(board[y + factor][x - 1]))
+						if(!sameColor(board[y + factor][x - 1])) {
 							targeting.add(new Coordinate(x - 1, y + factor)); // left
+						} else {
+							sameTargeting.add(new Coordinate(x - 1, y + factor));
+						}
 					}
 				}
 				if(!(x + 1 == board[0].length)) {
 					if(board[y + factor][x + 1] != null) {
-						if(!sameColor(board[y + factor][x + 1]))
+						if(!sameColor(board[y + factor][x + 1])) {
 							targeting.add(new Coordinate(x + 1, y + factor)); // right
+						} else {
+							sameTargeting.add(new Coordinate(x + 1, y + factor));
+						}
 					}
 				}			
 			}
 			
 		}
+		
+		return open;
 	}
 	
 	/**

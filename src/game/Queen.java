@@ -12,6 +12,7 @@ public class Queen implements Piece {
 	private PieceColor color;//color of the piece
 	
 	private Set<Coordinate> targeting;// Rows and columns being targeted
+	private Set<Coordinate> sameTargeting;
 
 	public Queen(int x, int y, PieceColor color) {
 		this.x = x;
@@ -19,6 +20,7 @@ public class Queen implements Piece {
 		this.color = color;
 		this.type = PieceType.QUEEN;
 		this.targeting = new HashSet<>();
+		this.sameTargeting = new HashSet<>();
 	}
 
 	/**
@@ -93,6 +95,11 @@ public class Queen implements Piece {
 	public void setTargeting(Set<Coordinate> update) {
 		this.targeting = update;
 	}
+	
+	@Override
+	public Set<Coordinate> getSameColorTargeting() {
+		return this.sameTargeting;
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -100,12 +107,12 @@ public class Queen implements Piece {
 	@Override
 	public void updateTargeting(Piece[][] board) {
 		
+		CheckLines lineChecker = new CheckLines(board, color, targeting, new Coordinate(this.x, this.y), x, y);
+		
 		targeting.clear();
-		targeting = new HashSet<>();
+		sameTargeting.clear();
 		
-		CheckLines.checkLines(board, color, targeting, x, y);
-		
-		CheckDiags.checkDiags(board, color, targeting, x, y);
+		sameTargeting.addAll(lineChecker.checkAll());
 
 	}
 
