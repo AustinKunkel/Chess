@@ -53,7 +53,7 @@ public interface Piece {
 	
 	/**
 	 * 
-	 * @return a Map<Integer, Integer> of the pieces being targeted
+	 * @return a Set<Coordinate> of the pieces being targeted
 	 */
 	public Set<Coordinate> getTargeting();
 	
@@ -62,6 +62,12 @@ public interface Piece {
 	 * @param update
 	 */
 	public void setTargeting(Set<Coordinate> update);
+	
+	/**
+	 * 
+	 * @return a Set<Coordinate> of the pieces of the same color being targeted
+	 */
+	public Set<Coordinate> getSameColorTargeting();
 	
 	/**
 	 * updates the piece's targeting list

@@ -12,6 +12,7 @@ public class Knight implements Piece {
 	private PieceColor color;//color of the piece
 	
 	private Set<Coordinate> targeting;// Rows and columns being targeted
+	private Set<Coordinate> sameTargeting;
 
 	public Knight(int x, int y, PieceColor color) {
 		this.x = x;
@@ -19,6 +20,7 @@ public class Knight implements Piece {
 		this.color = color;
 		this.type = PieceType.KNIGHT;
 		this.targeting = new HashSet<>();
+		this.sameTargeting = new HashSet<>();
 	}
 
 	/**
@@ -93,14 +95,21 @@ public class Knight implements Piece {
 	public void setTargeting(Set<Coordinate> update) {
 		this.targeting = update;
 	}
+	
+
+	@Override
+	public Set<Coordinate> getSameColorTargeting() {
+		return this.sameTargeting;
+	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public void updateTargeting(Piece[][] board) {
+		
 		this.targeting.clear();
-		targeting = new HashSet<>();
+		this.sameTargeting.clear();
 		// check right
 		checkRight(board);
 		
@@ -122,6 +131,8 @@ public class Knight implements Piece {
 				if(board[y + 1][x + 2] != null) {// if its not an empty space
 					if(!sameColor(board[y + 1][x + 2]))
 						this.targeting.add(new Coordinate(x + 2, y + 1));
+					else
+						this.sameTargeting.add(new Coordinate(x + 2, y + 1));
 				} else {
 					this.targeting.add(new Coordinate(x + 2, y + 1));
 				}
@@ -132,6 +143,8 @@ public class Knight implements Piece {
 				if(board[y - 1][x +2] != null) {// if its not an empty space
 					if(!sameColor(board[y - 1][x + 2]))
 						this.targeting.add(new Coordinate(x + 2, y - 1));
+					else
+						this.sameTargeting.add(new Coordinate(x + 2, y - 1));
 				} else {
 					this.targeting.add(new Coordinate(x + 2, y - 1));
 				}
@@ -146,6 +159,8 @@ public class Knight implements Piece {
 				if(board[y + 1][x - 2] != null) {
 					if(!sameColor(board[y + 1][x - 2]))
 						this.targeting.add(new Coordinate(x - 2, y + 1));
+					else
+						this.sameTargeting.add(new Coordinate(x - 2, y + 1));
 				} else {
 					this.targeting.add(new Coordinate(x - 2, y + 1));
 				}
@@ -156,6 +171,8 @@ public class Knight implements Piece {
 				if(board[y - 1][x - 2] != null) {// if its not an empty space
 					if(!sameColor(board[y - 1][x - 2]))
 						this.targeting.add(new Coordinate(x - 2, y - 1));
+					else
+						this.sameTargeting.add(new Coordinate(x - 2, y - 1));
 				} else {
 					this.targeting.add(new Coordinate(x - 2, y - 1));
 				}
@@ -170,6 +187,8 @@ public class Knight implements Piece {
 				if(board[y + 2][x + 1] != null) {
 					if(!sameColor(board[y + 2][x + 1]))
 						this.targeting.add(new Coordinate(x + 1, y + 2));
+					else
+						this.sameTargeting.add(new Coordinate(x + 1, y + 2));
 				} else {
 					this.targeting.add(new Coordinate(x + 1, y + 2));
 				}
@@ -180,6 +199,8 @@ public class Knight implements Piece {
 				if(board[y + 2][x - 1] != null) {// if its not an empty space
 					if(!sameColor(board[y + 2][x - 1]))
 						this.targeting.add(new Coordinate(x - 1, y + 2));
+					else
+						this.sameTargeting.add(new Coordinate(x - 1, y + 2));
 				} else {
 					this.targeting.add(new Coordinate(x - 1, y + 2));
 				}
@@ -194,6 +215,8 @@ public class Knight implements Piece {
 				if(board[y - 2][x + 1] != null) {
 					if(!sameColor(board[y - 2][x + 1]))
 						this.targeting.add(new Coordinate(x + 1, y - 2));
+					else
+						this.sameTargeting.add(new Coordinate(x + 1, y - 2));
 				} else {
 					this.targeting.add(new Coordinate(x + 1, y - 2));
 				}
@@ -204,6 +227,8 @@ public class Knight implements Piece {
 				if(board[y - 2][x - 1] != null) {// if its not an empty space
 					if(!sameColor(board[y - 2][x - 1]))
 						this.targeting.add(new Coordinate(x - 1, y - 2));
+					else
+						this.sameTargeting.add(new Coordinate(x - 1, y - 2));
 				} else {
 					this.targeting.add(new Coordinate(x - 1, y - 2));
 				}
@@ -234,5 +259,6 @@ public class Knight implements Piece {
 	public String toString() {
 		return type.toString() + x + y;
 	}
+
 
 }

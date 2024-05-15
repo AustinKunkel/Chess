@@ -12,6 +12,7 @@ public class Rook implements Piece {
 	private PieceColor color;//color of the piece
 	
 	private Set<Coordinate> targeting;// Rows and columns being targeted
+	private Set<Coordinate> sameTargeting; 
 
 	public Rook(int x, int y, PieceColor color) {
 		this.x = x;
@@ -19,6 +20,7 @@ public class Rook implements Piece {
 		this.color = color;
 		this.type = PieceType.ROOK;
 		this.targeting = new HashSet<>();
+		this.sameTargeting = new HashSet<>();
 	}
 
 	/**
@@ -94,15 +96,23 @@ public class Rook implements Piece {
 		this.targeting = update;
 	}
 	
+
+	@Override
+	public Set<Coordinate> getSameColorTargeting() {
+		return this.sameTargeting;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public void updateTargeting(Piece[][] board) {
+		CheckLines lineChecker = new CheckLines(board, color, targeting, new Coordinate(this.x, this.y), x, y);
 		
 		this.targeting.clear();
-		
-		CheckLines.checkLines(board, color, this.targeting, x, y);
+		this.sameTargeting.clear();
+		 
+		this.sameTargeting.addAll(lineChecker.checkLines());
 	}
 	
 	
@@ -129,4 +139,5 @@ public class Rook implements Piece {
 	public String toString() {
 		return type.toString() + x + y;
 	}
+
 }

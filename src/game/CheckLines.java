@@ -9,193 +9,223 @@ import java.util.Set;
  */
 public class CheckLines {
 	
-	private static Set<Coordinate> canTarget;
+	private Piece[][] board;
+	private int x,y;
+	private PieceColor color;
 	
-	private static Piece breakPiece = null;
+	private Set<Coordinate> targeting;
+	private Set<Coordinate> sameTarget;
+	private Set<Coordinate> setToKeep;
 	
-	private static Piece currPiece = null;
+	private Coordinate origPieceCoord;
+	private Piece king;
+	private Piece breakPiece;
+	private Piece currPiece;
 	
-	public CheckLines() {}
+	private boolean kingInCheck;
 	
-	public static Set<Coordinate> checkLines(Piece[][] board,
-								  PieceColor color,
-								  Set<Coordinate> targeting,
-								  int x,
-								  int y) {
+	public CheckLines(Piece[][] board, PieceColor color, Set<Coordinate> targeting, Coordinate origPieceCoord, int x, int y) {
+		this.board = board;
+		this.x = x;
+		this.y = y;
+		this.color = color;
+		this.origPieceCoord = origPieceCoord;
+		this.targeting = targeting;
 		
-		canTarget = new HashSet<>();
+		this.setToKeep = new HashSet<>();
+		this.sameTarget = new HashSet<>();
+		this.breakPiece = null;
+		this.currPiece = null;
+		this.king = null;
+		this.kingInCheck = false;
+	}
+	
+	public Set<Coordinate> checkAll() {
 		
-		// checking right side of the rank:
-		checkRight(board, x, y, targeting, color, 1);
+		clearAll();
 		
-		// checking left side:
-		checkLeft(board, x, y, targeting, color, 1);
+		Set<Coordinate> set = new HashSet<>();
+		//adds all lines
+		set.addAll(checkLines());
+		set.addAll(checkDiags());
 		
-		// checking up:
-		checkUp(board, x, y, targeting, color, 1);
-		
-		// checking down:
-		checkDown(board, x, y, targeting, color, 1);
-		
-		return canTarget;
+		return set;
 	}
 	
 	/**
-	 * Checks right side, will stop at any point
-	 * it finds a piece.
-	 * If it finds a piece of a different color,
-	 * it will add it to targeting.
-	 * 
-	 * Recursively checks another time so it 
-	 * adds the king to the possible moves.
-	 * useful in avoiding check when moving
-	 * a piece
+	 * Iterates through each line to check.
 	 * @param board
+	 * @param color
+	 * @param targeting
+	 * @param pieceCoord => Coordinates of the piece
+	 * @param x
+	 * @param y
+	 * @return a Set<Coordinate> of pieces that aren't directly 
+	 * targeted, but can be if behind a piece
 	 */
-	private static boolean checkRight(Piece[][] board, int x, int y, Set<Coordinate> targeting, PieceColor color, int iteration) {
-		int tempX = x + 1;
-		while(tempX < board[0].length) {
-			currPiece = board[y][tempX];
-			// will break
-			if(currPiece != null) {
-				if(!sameColor(currPiece, color)) {
-					targeting.add(new Coordinate(tempX, y));
+	public Set<Coordinate> checkLines() {
+		
+		clearAll();
+		
+		// if king was put in check
+		if(check(x, y, 1, -1, 0)) {// check left line
+			this.kingInCheck = true;
+		}
+		
+		if(!kingInCheck) {
+			setToKeep.clear();
+		}
+		if(check(x, y, 1, 1, 0)) {// check right line
+			this.kingInCheck = true;
+		}
+		
+		if(!kingInCheck) {
+			setToKeep.clear();
+		}
+		if(check(x, y, 1, 0, 1)) { // check up
+			this.kingInCheck = true;
+		}
+		
+		if(!kingInCheck) {
+			setToKeep.clear();
+		}
+		if(check(x, y, 1, 0, -1)) { // check down
+			this.kingInCheck = true;
+		}
+		
+		if(this.kingInCheck)
+			kingIsInCheck();
+		
+		return sameTarget;
 
-					//if king is in check
-					if(currPiece.getType() == PieceType.KING) {
-						return true;
-					}
-					
-					//so we can keep track of the piece that we need to update
-					if(iteration < 2) {
-						breakPiece = currPiece;
-					}
-				}
-				break;
-			} 
-			// so this can be put here
-			targeting.add(new Coordinate(tempX, y));
-			tempX++;
-		}
-		
-		if(iteration < 2) {
-			iteration++;
-			if(checkRight(board, tempX, y, canTarget, color, iteration)) {// if king is in check
-				if(breakPiece != null) {// and there was a piece before it
-					// update that piece's targeting 
-					updatePieceTargetingIfCheck(breakPiece, currPiece.getTargeting());
-				}	
-			}
-		}
-		
-		breakPiece = null;
-		
-		return false;
 	}
 	
-	/**
-	 * Checks right side, will stop at any point
-	 * it finds a piece.
-	 * If it finds a piece of a different color,
-	 * it will add it to targeting
-	 * 
-	 * Recursively checks another time so it 
-	 * adds the king to the possible moves.
-	 * useful in avoiding check when moving
-	 * a piece
-	 * @param board
-	 */
-	private static boolean checkLeft(Piece[][] board, int x, int y,  Set<Coordinate> targeting, PieceColor color, int iteration) {
-		int tempX = x - 1;
+	public Set<Coordinate> checkDiags() {
+
+		clearAll();
 		
-		while(tempX >= 0) {
-			currPiece = board[y][tempX];
+		boolean kingInCheck = false;
+
+		//if king was put in check
+		if(check(x, y, 1, -1, -1)) {// check bL
+			kingInCheck = true;
+		}
+		
+		if(!kingInCheck) {
+			setToKeep.clear();
+		}
+		if(check(x, y, 1, -1, 1)) {// check tL
+			kingInCheck = true;
+		}
+		
+		if(!kingInCheck) {
+			setToKeep.clear();
+
+		}
+		if(check(x, y, 1, 1, 1)) {// check tR
+			kingInCheck = true;
+		}
+		
+		if(!kingInCheck) {
+			setToKeep.clear();
+		}
+		if(check(x, y, 1, 1, -1)) {// check bR
+			kingInCheck = true;
+		}
+		
+		System.out.println("set to keep: " + setToKeep);
+		if(kingInCheck)
+			kingIsInCheck();
 			
-			// will break
-			if(currPiece != null) {
-				if(!sameColor(currPiece, color)) {
-					targeting.add(new Coordinate(tempX, y));
-
-					//if king is in check
-					if(currPiece.getType() == PieceType.KING) {
-						return true;
-					}
-					
-					//so we can keep track of the piece that we need to update
-					if(iteration < 2) {
-						breakPiece = currPiece;
-					}
-				}
+		return sameTarget;
+	
+	}
+	
+	/**
+	 * Helper function for when the king is in check
+	 * will find the intersection of the piece and 
+	 * the king
+	 */
+	private void kingIsInCheck() {
+		System.out.println("King in check");
+		if(king == null) {
+			return;
+		}
+		Set<Coordinate> intersection = new HashSet<>();
+		Set<Coordinate> kingTargeting = king.getTargeting();
+		
+		for(Coordinate c : kingTargeting) {
+			if(targeting.contains(c)) {
+				intersection.add(c);
+			}
 				
-				break;
-			} 
-			// so this can be put here
-			targeting.add(new Coordinate(tempX, y));
-			tempX--;
-		}
-		if(iteration < 2) {
-			iteration++;
-			if(checkLeft(board, tempX, y, canTarget, color, iteration)) {// if king is in check
-				if(breakPiece != null) {// and there was a piece before it
-					// update that piece's targeting 
-					updatePieceTargetingIfCheck(breakPiece, currPiece.getTargeting());
-				}	
-			}
 		}
 		
-		breakPiece = null;
+		intersection.addAll(setToKeep);
 		
-		return false;
-		
+		System.out.println(targeting);
 	}
 	
+
 	/**
-	 * Checks right side, will stop at any point
-	 * it finds a piece.
-	 * If it finds a piece of a different color,
-	 * it will add it to targeting
-	 * 
-	 * Recursively checks another time so it 
-	 * adds the king to the possible moves.
-	 * useful in avoiding check when moving
-	 * a piece
+	 * Similar method to checkLines. starts from center and branches outward.
+	 * will then call again so that it can see if the next piece is a king.
+	 * helpful for determining moves in advance.
 	 * @param board
+	 * @param x
+	 * @param y
+	 * @param color
+	 * @param iteration
+	 * @param xFactor
+	 * @param yFactor
+	 * @return true if king is in check; false otherwise
 	 */
-	private static boolean checkUp(Piece[][] board, int x, int y,  Set<Coordinate> targeting, PieceColor color, int iteration) {
-		int tempY = y + 1;
+	private boolean check(int x, int y, int iteration, int xFactor, int yFactor) {
+		int tempX = x + xFactor;
+		int tempY = y + yFactor;
 		
-		while(tempY < board.length) {
-			currPiece = board[tempY][x];
+		while((tempX <= board[0].length - 1) && (tempY <= board.length - 1) && tempX >= 0 && tempY >= 0) {
+			currPiece = board[tempY][tempX];
 			
-			// will break
 			if(currPiece != null) {
 				if(!sameColor(currPiece, color)) {
-					targeting.add(new Coordinate(x, tempY));
-
+					// add piece to targeting
+					if(iteration < 2) {
+						addCoordinate(tempX, tempY);
+					}
+					
 					//if king is in check
 					if(currPiece.getType() == PieceType.KING) {
+						king = currPiece;
+						System.out.println(king);
 						return true;
 					}
 					
 					//so we can keep track of the piece that we need to update
+					// need to do this after so the logic underneath works
 					if(iteration < 2) {
 						breakPiece = currPiece;
 					}
+				} else {
+					sameTarget.add(new Coordinate(tempX, tempY));
 				}
 				break;
 			}
-			// so this can be put here
-			targeting.add(new Coordinate(x, tempY));
-			tempY++;
+			if(iteration < 2) {
+				addCoordinate(tempX, tempY);
+			}
+			
+			tempX += xFactor;
+			tempY += yFactor;
 		}
 		
 		if(iteration < 2) {
 			iteration++;
-			if(checkUp(board, x, tempY, canTarget, color, iteration)) {// if king is in check
+			if(check(tempX, tempY, iteration, xFactor, yFactor)) {// if king is in check
 				if(breakPiece != null) {// and there was a piece before it
 					// update that piece's targeting 
 					updatePieceTargetingIfCheck(breakPiece, currPiece.getTargeting());
-				}	
+				}
 			}
 		}
 		
@@ -204,60 +234,12 @@ public class CheckLines {
 		return false;
 	}
 	
-	/**
-	 * Checks right side, will stop at any point
-	 * it finds a piece.
-	 * If it finds a piece of a different color,
-	 * it will add it to targeting
-	 * 
-	 * Recursively checks another time so it 
-	 * adds the king to the possible moves.
-	 * useful in avoiding check when moving
-	 * a piece
-	 * @param board
-	 */
-	private static boolean checkDown(Piece[][] board, int x, int y,  Set<Coordinate> targeting, PieceColor color, int iteration) {
-		int tempY = y - 1;
-		
-		while(tempY >= 0) {
-			currPiece = board[tempY][x];
-			
-			// will break
-			if(currPiece != null) {
-				if(!sameColor(currPiece, color)) {
-					targeting.add(new Coordinate(x, tempY));
-					
-					//if king is in check
-					if(currPiece.getType() == PieceType.KING) {
-						return true;
-					}
-					
-					//so we can keep track of the piece that we need to update
-					if(iteration < 2) {
-						breakPiece = currPiece;
-					}
-				}
-				break;
-			}
-			// so this can be put here
-			targeting.add(new Coordinate(x, tempY));
-			tempY--;
+	private void addCoordinate(int x, int y) {
+		Coordinate coord = new Coordinate(x, y);
+		targeting.add(coord);
+		if(!kingInCheck) {
+			setToKeep.add(coord);
 		}
-		
-		if(iteration < 2) {
-			iteration++;
-			if(checkDown(board, x, tempY, canTarget, color, iteration)) {// if king is in check
-				if(breakPiece != null) {// and there was a piece before it
-					// update that piece's targeting 
-					updatePieceTargetingIfCheck(breakPiece, currPiece.getTargeting());
-				}	
-			}
-		}
-		
-		breakPiece = null;
-		
-		return false;
-
 	}
 	
 	public static boolean sameColor(Piece piece, PieceColor color) {
@@ -268,13 +250,18 @@ public class CheckLines {
 	 * keeps intersection of piece and targeting of piece
 	 * that can check king
 	 * @param piece
-	 * @param targeting => map of the piece that is targeting the king
+	 * @param targeting => Set of the piece that is targeting the king
 	 */
-	private static void updatePieceTargetingIfCheck(Piece piece, Set<Coordinate> targeting) {
+	private void updatePieceTargetingIfCheck(Piece piece, Set<Coordinate> currTargeting) {
 		Set<Coordinate> pieceTargeting = piece.getTargeting();
 		Set<Coordinate> intersection = new HashSet<>();
 		
-		for(Coordinate coord : targeting) {
+		// if the piece can attack
+		if(pieceTargeting.contains(origPieceCoord)) {
+			intersection.add(origPieceCoord);
+		}
+		
+		for(Coordinate coord : currTargeting) {
 			if(pieceTargeting.contains(coord)) {
 				intersection.add(coord);
 			}	
@@ -282,5 +269,13 @@ public class CheckLines {
 		
 		piece.setTargeting(intersection);
 	}
-
+	
+	private void clearAll() {
+		this.setToKeep.clear();
+		this.sameTarget.clear();
+		
+		this.breakPiece = null;
+		this.currPiece = null;
+		this.king = null;
+	}
 }

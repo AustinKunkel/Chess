@@ -12,6 +12,7 @@ public class King implements Piece{
 	private PieceColor color;//color of the piece
 	
 	private Set<Coordinate> targeting;// Rows and columns being targeted
+	private Set<Coordinate> sameTargeting;
 
 	public King(int x, int y, PieceColor color) {
 		this.x = x;
@@ -19,6 +20,7 @@ public class King implements Piece{
 		this.color = color;
 		this.type = PieceType.KING;
 		this.targeting = new HashSet<>();
+		this.sameTargeting = new HashSet<>();
 	}
 
 	/**
@@ -94,13 +96,19 @@ public class King implements Piece{
 		this.targeting = update;
 	}
 	
+
+	@Override
+	public Set<Coordinate> getSameColorTargeting() {
+		return this.sameTargeting;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public void updateTargeting(Piece[][] board) {
 		targeting.clear();
-		targeting = new HashSet<>();
+		sameTargeting.clear();
 		
 		if(y + 1 <= board.length - 1) { // if not on the upper edge,
 									   // search the upper pieces
@@ -128,6 +136,8 @@ public class King implements Piece{
 			if(board[x] != null) {
 				if(!sameColor(board[x]))
 					this.targeting.add(new Coordinate(x, row));
+				else
+					this.sameTargeting.add(new Coordinate(x, row));
 			} else {
 				this.targeting.add(new Coordinate(x, row));
 			}
@@ -138,6 +148,8 @@ public class King implements Piece{
 			if(board[x - 1] != null) {
 				if(!sameColor(board[x - 1])) 
 					this.targeting.add(new Coordinate(x - 1, row)); // left
+				else
+					this.sameTargeting.add(new Coordinate(x - 1, row));
 			}else {
 				this.targeting.add(new Coordinate(x - 1, row)); // left
 			}
@@ -146,6 +158,8 @@ public class King implements Piece{
 			if(board[x + 1] != null) {
 				if(!sameColor(board[x + 1]))
 					targeting.add(new Coordinate(x + 1, row)); // right
+				else
+					this.sameTargeting.add(new Coordinate(x + 1, row));
 			} else {
 				targeting.add(new Coordinate(x + 1, row)); // right
 
@@ -177,4 +191,5 @@ public class King implements Piece{
 	public String toString() {
 		return type.toString() + x + y;
 	}
+
 }

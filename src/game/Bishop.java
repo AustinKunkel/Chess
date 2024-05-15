@@ -12,6 +12,7 @@ public class Bishop implements Piece {
 	private PieceColor color;//color of the piece
 	
 	private Set<Coordinate> targeting;// Rows and columns being targeted
+	private Set<Coordinate> sameTargeting;
 
 	public Bishop(int x, int y, PieceColor color) {
 		this.x = x;
@@ -19,6 +20,7 @@ public class Bishop implements Piece {
 		this.color = color;
 		this.type = PieceType.BISHOP;
 		this.targeting = new HashSet<>();
+		this.sameTargeting = new HashSet<>();
 	}
 
 	/**
@@ -93,16 +95,24 @@ public class Bishop implements Piece {
 	public void setTargeting(Set<Coordinate> update) {
 		this.targeting = update;
 	}
+	
+	@Override
+	public Set<Coordinate> getSameColorTargeting() {
+		return this.sameTargeting;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public void updateTargeting(Piece[][] board) {
 		
-		targeting.clear();
-		targeting = new HashSet<>();
+		CheckLines lineChecker = new CheckLines(board, color, targeting, new Coordinate(this.x, this.y), x, y);
 		
-		CheckDiags.checkDiags(board, color, targeting, x, y);
+		targeting.clear();
+		sameTargeting.clear();
+		
+		sameTargeting.addAll(lineChecker.checkDiags());
 	}
 
 	/**
