@@ -143,7 +143,8 @@ public class Pawn implements Piece{
 	 */
 	private boolean checkForward(int factor, int border, Piece[][] board) {
 		boolean open = true;
-		if(!(y + factor == border)) {
+
+		if(!(y + factor >= border)) {
 			// check forward to see if a piece isnt there:
 			if(board[y + factor][x] == null) {
 				this.targeting.add(new Coordinate(x, y + factor));

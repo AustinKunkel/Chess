@@ -19,8 +19,8 @@ public class Game {
 									  {new Pawn(0,6, black),new Pawn(1,6, black), new Pawn(2,6, black), new Pawn(3,6, black), new Pawn(4,6, black), new Pawn(5,6, black), new Pawn(6,6, black), new Pawn(7,6, black)},
 									  {new Rook(0,7, black), new Knight(1,7, black), new Bishop(2,7, black), new Queen(3,7, black), new King(4,7, black), new Bishop(5,7, black), new Knight(6,7, black), new Rook(7,7, black)}};
 	
-	private static Piece[][] board = {{null, null, null, new King(3, 0, white), new Rook(4, 0, black), null, null, new Rook(7, 0, black)},
-			                          {null, null, null, null, null, null, null, null}};
+	private static Piece[][] board = {{null, null, null, new King(3, 0, white),null, null, null, new Rook(7, 0, PieceColor.BLACK)},
+			                          {null, null, new Pawn(2, 1, white), new Pawn(3, 1, white), new Rook(4, 1, white), null, null, null}};
 	
 	private static List<Piece> allPieces = new ArrayList<>();
 
@@ -37,7 +37,7 @@ public class Game {
 
 		// ----------------------------
 		simulateUpdate();
-		simulateMove(allPieces.get(1), new Coordinate(4, 1));
+		simulateMove(allPieces.get(4), new Coordinate(4, 0));
 		simulateUpdate();
 
 		// set each piece's targeting methods BEFORE each move, so that
@@ -209,6 +209,7 @@ public class Game {
 		Piece wKing = null;
 		Piece bKing = null;
 		List<Piece> pieceList = new ArrayList<>();
+		boolean isMate = false;
 		
 		// updates targeting and finds kings
 		for(Piece piece : allPieces) {
@@ -225,14 +226,16 @@ public class Game {
 		
 		if(wKing != null) {
 			pieceList = getAllPieceByColor(black);
-			return updateMoveIfInCheck(pieceList, wKing);
+			 if(!updateMoveIfInCheck(pieceList, wKing))
+			 	isMate = true;
 		}
 		if(bKing != null) {
 			pieceList = getAllPieceByColor(white);
-			return updateMoveIfInCheck(pieceList, bKing);
+			if(!updateMoveIfInCheck(pieceList, bKing))
+				isMate = true;
 		}
 		
-		return true;
+		return !isMate;
 	}
 	
 	private static void checkMate() {
@@ -242,12 +245,11 @@ public class Game {
 	/**
 	 * Goes through checklist and sees how the pieces can move if king
 	 * is in check
-	 * @param pieceList
+	 * @param pieceList of pieces opposite color of king
 	 * @param king
 	 * @return true if there is a place to move; false if checkmate
 	 */
 	private static boolean updateMoveIfInCheck(List<Piece> pieceList, Piece king) {
-		
 		
 		List<Piece> listOfKingColor = getAllPieceByColor(king.getColor());
 		
@@ -256,26 +258,23 @@ public class Game {
 		// and update the list of pieces that can move out of the
 		// way
 
+
 		boolean pieceCanMove = true;
 		
 		for(Piece piece : pieceList) {
-			
+
 			Set<Coordinate> pieceTargeting = piece.getTargeting();
-			
+
 			Coordinate pieceLocation = new Coordinate(piece.getX(), piece.getY());
 					
-			// iterates through piece's targeting.
-			// will see if it is in king's targeting. will then remove that spot
-			// from the king's targeting.
-				
-			// update the king's moves
-			updateKingMove(king, piece, listOfKingColor);
-				
-			// update piece's targeting to see if it can move to block
-			pieceCanMove = updatePieceMoveIfInCheck(listOfKingColor, pieceTargeting, pieceLocation);
+			// update the king's moves and see if it is in check
+			if(updateKingMove(king, piece, listOfKingColor)) {
+					System.out.println("King in check");
+				// update piece's targeting to see if it can move to block
+				pieceCanMove = updatePieceMoveIfInCheck(listOfKingColor, pieceTargeting, pieceLocation);
+			}
 		}
-
-		return king.getTargeting().size() > 0 && pieceCanMove;
+		return king.getTargeting().size() > 0 || pieceCanMove;
 	}
 	
 	/**
@@ -289,11 +288,11 @@ public class Game {
 	 * @param entry
 	 * @param kingTargeting
 	 * @param piece => the piece targeting the king
-	 * @return true if king has place to go; false otherwise
+	 * @return true if king is in check; false otherwise
 	 */
 	private static boolean updateKingMove(Piece king, Piece piece, List<Piece> sameColor) {
 		
-		boolean noCheck = true;
+		boolean isCheck = false;
 		Set<Coordinate> pieceTargeting = piece.getTargeting();
 		Set<Coordinate> kingTargeting = king.getTargeting();
 		
@@ -301,12 +300,11 @@ public class Game {
 
 		// does this to stop killing protected pieces
 		removeUnwantedCoords(kingTargeting, piece.getSameColorTargeting());
-
 		// if the piece can target the king
 		if(pieceTargeting.contains(new Coordinate(king.getX(), king.getY()))) {
-				noCheck = false;
+			isCheck = true;
 		}
-		return noCheck;	
+		return isCheck;	
 	}
 
 	/**
@@ -345,7 +343,7 @@ public class Game {
 		boolean flag = false;
 
 		for(Piece piece : sameColor) {
-			
+
 			boolean canTakePiece = false;
 			
 			
@@ -353,8 +351,6 @@ public class Game {
 			
 			Set<Coordinate> pieceTargeting = piece.getTargeting();
 			
-			//checks to see if the piece that is targeting king can be taken
-			canTakePiece = pieceTargeting.contains(pieceCoord);
 			
 			for(Coordinate coord : targeting) {
 				if(pieceTargeting.contains(coord)) {
@@ -362,6 +358,9 @@ public class Game {
 				}	
 			}
 			
+			//checks to see if the piece that is targeting king can be taken
+			canTakePiece = pieceTargeting.contains(pieceCoord);
+
 			// if so, then we can add it back to the targeting list
 			if(canTakePiece) {
 				intersection.add(pieceCoord);

@@ -174,12 +174,12 @@ public class CheckLines {
 		for(Coordinate c : kingTargeting) {
 			if(targeting.contains(c))
 				intersection.add(c);
-				
 		}
 		intersection.addAll(setToKeep);
 
 		targeting.clear();
 		targeting.addAll(intersection);
+
 	}
 	
 
@@ -214,17 +214,17 @@ public class CheckLines {
 					//if king is in check
 					if(currPiece.getType() == PieceType.KING) {
 						king = currPiece;
-						breakPiece = king;
 						flag = true;
 					}
 					
 					//so we can keep track of the piece that we need to update
 					// need to do this after so the logic underneath works
-					if(iteration < 2){
-						breakPiece = currPiece;
-						if(sameColor(currPiece, breakPiece.getColor())) {
+					if(iteration >= 2){
+						if(!sameColor(currPiece, breakPiece.getColor())) {
 							breakPiece = null;
 						}
+					} else {
+						breakPiece = currPiece;
 					}
 						
 
