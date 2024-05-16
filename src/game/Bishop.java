@@ -112,7 +112,7 @@ public class Bishop implements Piece {
 		targeting.clear();
 		sameTargeting.clear();
 		
-		sameTargeting.addAll(lineChecker.checkDiags());
+		sameTargeting.addAll(lineChecker.checkDiags(false, null));
 	}
 
 	/**

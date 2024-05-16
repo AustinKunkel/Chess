@@ -112,7 +112,7 @@ public class Rook implements Piece {
 		this.targeting.clear();
 		this.sameTargeting.clear();
 		 
-		this.sameTargeting.addAll(lineChecker.checkLines());
+		this.sameTargeting.addAll(lineChecker.checkLines(false, null));
 	}
 	
 	
