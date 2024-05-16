@@ -19,7 +19,7 @@ public class Game {
 									  {new Pawn(0,6, black),new Pawn(1,6, black), new Pawn(2,6, black), new Pawn(3,6, black), new Pawn(4,6, black), new Pawn(5,6, black), new Pawn(6,6, black), new Pawn(7,6, black)},
 									  {new Rook(0,7, black), new Knight(1,7, black), new Bishop(2,7, black), new Queen(3,7, black), new King(4,7, black), new Bishop(5,7, black), new Knight(6,7, black), new Rook(7,7, black)}};
 	
-	private static Piece[][] board = {{null, null, null, new King(3, 0, white), new Rook(4, 0, white), null, null, new Rook(7, 0, black)},
+	private static Piece[][] board = {{null, null, null, new King(3, 0, white), new Rook(4, 0, black), null, null, new Rook(7, 0, black)},
 			                          {null, null, null, null, null, null, null, null}};
 	
 	private static List<Piece> allPieces = new ArrayList<>();
@@ -36,6 +36,8 @@ public class Game {
 		}
 
 		// ----------------------------
+		simulateUpdate();
+		simulateMove(allPieces.get(1), new Coordinate(4, 1));
 		simulateUpdate();
 
 		// set each piece's targeting methods BEFORE each move, so that
@@ -271,8 +273,8 @@ public class Game {
 				
 			// update piece's targeting to see if it can move to block
 			pieceCanMove = updatePieceMoveIfInCheck(listOfKingColor, pieceTargeting, pieceLocation);
-
 		}
+
 		return king.getTargeting().size() > 0 && pieceCanMove;
 	}
 	
@@ -336,8 +338,12 @@ public class Game {
 	 * @return true if there is a place to block the check; false otherwise
 	 */
 	private static boolean updatePieceMoveIfInCheck(List<Piece> sameColor, Set<Coordinate> targeting, Coordinate pieceCoord) {
+
+		if(sameColor.size() <= 0)
+			return true;
+
 		boolean flag = false;
-	
+
 		for(Piece piece : sameColor) {
 			
 			boolean canTakePiece = false;
