@@ -124,6 +124,12 @@ public abstract class Piece {
 	}
 	
 	/**
+	 * 
+	 * @return a Set<Coordinate> of the pieces of the same color being targeted
+	 */
+	public Set<Coordinate> getSameColorTargeting();
+	
+	/**
 	 * updates the piece's targeting list
 	 * with the current spots its targeting.
 	 * @param board
