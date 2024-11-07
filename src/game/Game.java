@@ -5,12 +5,20 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Game {
 	
 	private static final PieceColor white = PieceColor.WHITE;
 	private static final PieceColor black = PieceColor.BLACK;
+	private static boolean isCheckMate = false;
+	
+	private static Player player1;
+	
+	private static Player player2;
 	
 	private static Piece[][] board = {{new Rook(0,0, white), new Knight(1,0, white), new Bishop(2,0, white), new Queen(3,0, white), new King(4,0, white), new Bishop(5,0, white), new Knight(6,0, white), new Rook(7,0, white)},
 									  {new Pawn(0,1, white),new Pawn(1,1, white), new Pawn(2,1, white), new Pawn(3,1, white), new Pawn(4,1, white), new Pawn(5,1, white), new Pawn(6,1, white), new Pawn(7,1, white)},
@@ -34,88 +42,76 @@ public class Game {
 			}
 		}
 		
-		updateAllTargeted();
-		
-		for(Piece piece : allPieces) {
-			System.out.println(piece.toString() + " is targeting: " + piece.getTargeting());
-		}
-		
-		// - Move 1 ---------------------------------------------------------
-		
-		Piece piece1 = allPieces.get(13); // gets f2 pawn
-		System.out.println(piece1);
-		
-		System.out.println("Trying to move to 5, 3");
-		if(!move(piece1, new Coordinate(piece1.getX(), piece1.getY() + 2))) {
-			System.out.println("Cannot move to position 5, 3");
-		}
-		System.out.println(piece1.getX() + ", " + piece1.getY());
-		
-		// ---------------------------------------------------------------
+		player1 = new Player(white, getAllPieceByColor(white));
+		player2 = new Player(black, getAllPieceByColor(black));
 		
 		updateAllTargeted();
 		
-		for(Piece piece : allPieces) {
-			System.out.println(piece.toString() + " is targeting: " + piece.getTargeting());
-		}
 		
-		// - Move 2 ---------------------------------------------------------
+		System.out.println("Player 1: ");
+		System.out.println(player1.getCurrentPieces());
+		System.out.println("Player 2: ");
+		System.out.println(player2.getCurrentPieces());
 		
-		Piece piece2 = allPieces.get(20);// e7 pawn
-		System.out.println(piece2);
+		Scanner sc = new Scanner(System.in);
+		String line = "";
 		
-		System.out.println("Moving down 2 spaces");
-		move(piece2, new Coordinate(piece2.getX(), piece2.getY() - 2));
-		System.out.println(piece2.getX() + ", " + piece2.getY());
+		boolean isPlayer2 = false;
+		PieceColor playerColor = player1.getColor();
 		
-		System.out.println("trying to move 2 spaces down again:");
-		if(!move(piece2, new Coordinate(piece2.getX(), piece2.getY() - 2))) {
-			System.out.println("Cannot move down 2 again");
-		}		
-		System.out.println(piece2.getX() + ", " + piece2.getY());
-
-		// ---------------------------------------------------------------
-
-		updateAllTargeted();
-		
-		for(Piece piece : allPieces) {
-			System.out.println(piece.toString() + " is targeting: " + piece.getTargeting());
-		}
-		
-		// - Move 3 ---------------------------------------------------------
-		
-		Piece piece3 = allPieces.get(14); // get g2 pawn
-		
-		System.out.println("Trying to move to 6, 3");
-		if(!move(piece3, new Coordinate(piece3.getX(), piece3.getY() + 2))) {
-			System.out.println("Cannot move to position 6, 3");
-		}
-		System.out.println(piece3.getX() + ", " + piece3.getY());
-		
-		// ---------------------------------------------------------------
-
-		updateAllTargeted();
-		
-		for(Piece piece : allPieces) {
-			System.out.println(piece.toString() + " is targeting: " + piece.getTargeting());
-		}
-		
-		// - Move 4 --- Black check mates ---------------------------------
-		 Piece piece4 = allPieces.get(27);
-		 
-		System.out.println("Trying to move to 7, 3");
-		if(!move(piece4, new Coordinate(7,3))) {
-			System.out.println("Cannot move to position 7, 3");
-		}
-		System.out.println(piece4.getX() + ", " + piece4.getY());
-		
-		// ---------------------------------------------------------------
-
-		updateAllTargeted();
-		
-		for(Piece piece : allPieces) {
-			System.out.println(piece.toString() + " is targeting: " + piece.getTargeting());
-		}
+		// Main loop
+		while(!isCheckMate) {
+			updateAllTargeted();
+			for(Piece piece : allPieces) {
+				System.out.println(piece.toString() + ", is targeting: " + piece.getTargeting());
+			}
+			
+			System.out.println(playerColor + "'s move");
+			
+			
+			if(sc.hasNextLine()) {
+				line = sc.nextLine().trim();
+			}
+			while(!isValidInput(line)) {
+				System.out.println("Invalid input, please enter a valid input in chess notation <piece letter><file letter><rank number>");
+				if(sc.hasNextLine()) {
+					line = sc.nextLine().trim();
+				}
+			}
+			
+			Double<Piece, Coordinate> input = parseUserInput(line, playerColor);
+			input = parseUserInput(line, playerColor);
+			while(input.getFirst() == null) {
+				System.out.println("Could not move there, re enter where to move");
+				if(sc.hasNextLine()) {
+					line = sc.nextLine().trim();
+				}
+				while(!isValidInput(line)) {
+					System.out.println("Invalid input, please enter a valid input in chess notation <piece letter><file letter><rank number>");
+					if(sc.hasNextLine()) {
+						line = sc.nextLine().trim();
+					}
+				}
+				input = parseUserInput(line, playerColor);
+			}
+			
+			Piece inputPiece = input.getFirst();
+			Coordinate coordinate = input.getSecond();
+			
+			if(!move(inputPiece, coordinate)) {
+				System.out.println("Could not move " + inputPiece + " to " + coordinate);
+				continue;
+			}
+			if(!isPlayer2) {
+				isPlayer2 = true;
+				playerColor = player2.getColor();
+			} else {
+				isPlayer2 = false;
+				playerColor = player1.getColor();
+			}
+			
+		} //main loop
+		sc.close();
 		
 			
 		// set each piece's targeting methods BEFORE each move, so that
@@ -143,6 +139,56 @@ public class Game {
 		
 	}
 	
+	private static boolean isValidInput(String input) {
+		Pattern pattern = Pattern.compile("(?:(?<piece>[KQRBNkqrbn])?(?<file>[a-h])(?<rank>[1-8]))");
+	    Matcher matcher = pattern.matcher(input);
+	    return matcher.matches();
+	}
+	
+	private static Double<Piece, Coordinate> parseUserInput(String input, PieceColor color) {
+		char firstChar = input.charAt(0);
+		PieceType pieceType = getPieceTypeFromLetter(firstChar);
+		int fileIndex, rankIndex;
+		
+		if(pieceType != null) { // if the piece is not a pawn
+			fileIndex = input.charAt(1) - 'a';
+			rankIndex = Character.getNumericValue(input.charAt(2)) - 1;
+		} else {
+			pieceType = PieceType.PAWN;
+			fileIndex = input.charAt(0) - 'a';
+			rankIndex = Character.getNumericValue(input.charAt(1)) - 1;
+		}
+		Coordinate coordinate = new Coordinate(fileIndex, rankIndex);
+		
+		List<Piece> pieces = getAllPieceByColor(color);
+		
+		for(Piece piece : pieces) {
+			if(piece.getType() != pieceType) {
+				continue;
+			}
+			if(piece.getTargeting().contains(coordinate)) {
+				return new Double<>(piece, coordinate);
+			}
+		}
+		return new Double<>(null, null);
+	}
+	
+	/**
+	 * Pawns should be handled before (letter of nothing)
+	 * @param letter
+	 * @return
+	 */
+	private static PieceType getPieceTypeFromLetter(char letter) {
+		letter = Character.toLowerCase(letter);
+		return switch(letter) {
+		case 'b' -> PieceType.BISHOP;
+		case 'k' -> PieceType.KING;
+		case 'q' -> PieceType.QUEEN;
+		case 'r' -> PieceType.ROOK;
+		case 'n' -> PieceType.KNIGHT;
+		default -> null;
+		};
+	}
 	
 	/**
 	 * removes the selected piece from the board
@@ -156,6 +202,14 @@ public class Game {
 		board[piece.getY()][piece.getX()] = null;
 		
 		allPieces.remove(piece);
+		
+		if(piece.getColor().equals(player1.getColor())) {
+			player1.removeFromCurrentPieces(piece);
+			player2.addToTakenPieces(piece);
+		} else {
+			player2.removeFromCurrentPieces(piece);
+			player1.addToTakenPieces(piece);
+		}
 		return true;
 	}
 	
@@ -179,7 +233,6 @@ public class Game {
 			return false;
 		}
 		
-		System.out.println(c);
 		Piece piece2 = board[c.getY()][c.getX()];
 		
 		//if empty space, move into empty space
@@ -189,15 +242,12 @@ public class Game {
 		
 		// if the pieces' colors are the same
 		if(piece.sameColor(piece2)) {
-			
 			return false;
 		}
 		
 		// A piece exists there, so it must be killed
 		
-		if(!killPiece(board[c.getX()][c.getY()]))
-			return false;
-			
+		if(!killPiece(piece2)) return false;
 			
 		return moveIntoEmpty(piece, c.getX(), c.getY());
 	}
@@ -217,7 +267,7 @@ public class Game {
 		}
 		
 		if (board[y][x] != null) {
-	        System.out.println("Target spot is not empty");
+			System.out.println("Spot is not null");
 	        return false; // Ensures the target spot is empty before moving
 	    }
 			
@@ -302,17 +352,27 @@ public class Game {
 		
 		
 		if(wKing != null) {
-			checkList = getCheckList( allPieces.get(allPieces.indexOf(wKing)));
-			if(!updateMoveIfInCheck(checkList, wKing)) checkMate();
+			updateMoveIfInCheck(getAllPieceByColor(PieceColor.BLACK), wKing);
+//			checkList = getCheckList( allPieces.get(allPieces.indexOf(wKing)));
+//			if(!checkList.isEmpty()) {
+//				if(!updateMoveIfInCheck(getAllPieceByColor(PieceColor.BLACK), wKing)) checkMate();
+//			}
+		}else {
+			checkMate();
 		}
 		if(bKing != null) {
-			checkList = getCheckList( allPieces.get(allPieces.indexOf(bKing)));
-			if(!updateMoveIfInCheck(checkList, bKing)) checkMate();
-
+			updateMoveIfInCheck(getAllPieceByColor(PieceColor.WHITE), bKing);
+//			checkList = getCheckList( allPieces.get(allPieces.indexOf(bKing)));
+//			if(!checkList.isEmpty()) {
+//				if(!updateMoveIfInCheck(checkList, bKing)) checkMate();
+//			}
+		} else {
+			checkMate();
 		}
 	}
 	
 	private static void checkMate() {
+	isCheckMate = true;
 	System.out.println("CHECKMATE");
 	}
 	
@@ -325,7 +385,7 @@ public class Game {
 	 */
 	private static boolean updateMoveIfInCheck(List<Piece> checkList, Piece king) {
 		
-		boolean flag = true;
+		boolean flag = false; // true if a piece can move
 		
 		List<Piece> listOfKingColor = getAllPieceByColor(king.getColor());
 		
@@ -337,42 +397,48 @@ public class Game {
 			Set<Coordinate> kingTargeting = king.getTargeting();
 			Set<Coordinate> pieceTargeting = piece.getTargeting();
 			
+			boolean kingInCheck = false;
+			
 			// iterates through piece's targeting.
 			// will see if it is in king's targeting. will then remove that spot
 			// from the king's targeting.
-				
-				// check if king can move
-				boolean kingCanMove = updateKingMoveIfInCheck(pieceTargeting, kingTargeting);
-				
-				// update piece's targeting to see if it can move to block
-				boolean pieceCanMove = updatePieceMoveIfInCheck(listOfKingColor, pieceTargeting);
-				
-				if(!(kingCanMove && pieceCanMove)) {
-					flag = false;
-				} else {
-					flag = true;
+			
+			for(Coordinate pieces : pieceTargeting) {
+				if(pieces.equals(king.getCoord())) {
+					kingInCheck = true;
+					Set<Coordinate> kingTargeted = updateKingMoveIfInCheck(pieceTargeting, kingTargeting);
+					// update piece's targeting to see if it can move to block
+					boolean pieceCanMove = updatePieceMoveIfInCheck(listOfKingColor, kingTargeted);
+					return !king.getTargeting().isEmpty() || flag;
 				}
+				if(kingTargeting.contains(pieces)) {
+					kingTargeting.remove(pieces);
+				}
+			}
 		}
-		return flag;
+		return !king.getTargeting().isEmpty();
 	}
 	
 	/**
 	 * helper function for updateMoveIfInCheck
 	 * 
-	 * Updates the king's moves if it is in check.
-	 * Does this by getting places where it cannot move
+	 * Updates the king's moves to avoid check.
+	 * Does this by getting places where it cannot move and removing that fron the king's targeting
 	 * @param entry
 	 * @param kingTargeting
 	 * @return true if king has place to go; false otherwise
 	 */
-	private static boolean updateKingMoveIfInCheck(Set<Coordinate> pieceTargeting, Set<Coordinate> kingTargeting) {
+	private static Set<Coordinate> updateKingMoveIfInCheck(Set<Coordinate> pieceTargeting, Set<Coordinate> kingTargeting) {
+		
+		Set<Coordinate> targeted = new HashSet<>();
 		
 		for(Coordinate coord : pieceTargeting) {
 			if(kingTargeting.contains(coord)) {
+				targeted.add(coord);
 				kingTargeting.remove(coord);
 			}		
 		}
-		return kingTargeting.size() > 0;	
+		return targeted;	
 	}
 	
 	/**

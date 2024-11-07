@@ -2,99 +2,16 @@ package game;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Pawn implements Piece{
-	
-	private int x,y, move;//position in the array
-	
-	private final PieceType type;
+public class Pawn extends Piece{
 	
 	private PieceColor color;//color of the piece
 	
 	private Set<Coordinate> targeting;
 
 	public Pawn(int x, int y, PieceColor color) {
-		this.x = x;
-		this.y = y;
+		super(x, y, color, PieceType.PAWN, new HashSet<Coordinate>());
 		this.color = color;
-		this.type = PieceType.PAWN;
-		this.move = 0;
-		this.targeting = new HashSet<>();
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int getX() {
-		return this.x;
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void setX(int x) {
-		this.x = x;
-	}
-	
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int getY() {
-		return this.y;
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void setY(int y) {
-		this.y = y;
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void setPos(int x, int y) {
-		this.setX(x);
-		this.setY(y);
-		//inherently moves forward when setting position
-		this.move++;
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public PieceType getType() {
-		return this.type;
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public PieceColor getColor() {
-		return this.color;
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Set<Coordinate> getTargeting() {
-		return this.targeting;
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void setTargeting(Set<Coordinate> update) {
-		this.targeting = update;
+		this.targeting = super.getTargeting();
 	}
 	
 	/**
@@ -117,7 +34,7 @@ public class Pawn implements Piece{
 		checkForward(factor, border, board);
 		
 		// now we check for 2 spaces in front when its the first move
-		if(this.move == 0) {
+		if(super.getMove() == 0) {
 			factor = factor * 2;
 			checkForward(factor, border, board);
 		}	
@@ -133,6 +50,8 @@ public class Pawn implements Piece{
 	 * @param board
 	 */
 	private void checkForward(int factor, int border, Piece[][] board) {
+		int x = super.getX();
+		int y = super.getY();
 		if(!(y + factor == border)) {
 			// check forward to see if a piece isnt there:
 			if(board[y + factor][x] == null) {
@@ -158,29 +77,4 @@ public class Pawn implements Piece{
 			
 		}
 	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean sameColor(Piece piece) {
-		return color == piece.getColor();
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean equals(Piece piece) {
-		return this.x == piece.getX() &&
-				   this.y == piece.getY() && 
-				   this.type == piece.getType() &&
-				   this.color == piece.getColor();
-	}
-	
-	@Override
-	public String toString() {
-		return type.toString() + x + y;
-	}
-
 }

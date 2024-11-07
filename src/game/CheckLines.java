@@ -205,7 +205,7 @@ public class CheckLines {
 	}
 	
 	/**
-	 * Checks right side, will stop at any point
+	 * Checks bottom, will stop at any point
 	 * it finds a piece.
 	 * If it finds a piece of a different color,
 	 * it will add it to targeting

@@ -28,9 +28,23 @@ public class Coordinate {
 		return this.x == coord.getX() && this.y == coord.getY();
 	}
 	
+	private char getFile() {
+		return switch(this.x) {
+		case 0 -> 'a';
+		case 1 -> 'b';
+		case 2 -> 'c';
+		case 3 -> 'd';
+		case 4 -> 'e';
+		case 5 -> 'f';
+		case 6 -> 'g';
+		case 7 -> 'h';
+		default -> 'i';
+		};
+	}
+	
 	@Override
 	public String toString() {
-		return "(" + x + " , " + y + ")";
+		return getFile() + "" + (y + 1);
 	}
 	
 	@Override

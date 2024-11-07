@@ -3,130 +3,19 @@ package game;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Bishop implements Piece {
-	
-	private int x,y;//position in the array
-	
-	private final PieceType type;
-	
-	private PieceColor color;//color of the piece
-	
-	private Set<Coordinate> targeting;// Rows and columns being targeted
+public class Bishop extends Piece {
 
 	public Bishop(int x, int y, PieceColor color) {
-		this.x = x;
-		this.y = y;
-		this.color = color;
-		this.type = PieceType.BISHOP;
-		this.targeting = new HashSet<>();
+		super(x, y, color, PieceType.BISHOP, new HashSet<Coordinate>());
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int getX() {
-		return this.x;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void setX(int x) {
-		this.x = x;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int getY() {
-		return this.y;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void setY(int y) {
-		this.y = y;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void setPos(int x, int y) {
-		this.setX(x);
-		this.setY(y);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public PieceType getType() {
-		return this.type;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public PieceColor getColor() {
-		return this.color;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Set<Coordinate> getTargeting() {
-		return this.targeting;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void setTargeting(Set<Coordinate> update) {
-		this.targeting = update;
-	}
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public void updateTargeting(Piece[][] board) {
-		
+		Set<Coordinate> targeting = super.getTargeting();
 		targeting.clear();
-		targeting = new HashSet<>();
-		
-		CheckDiags.checkDiags(board, color, targeting, x, y);
+		CheckDiags.checkDiags(board, super.getColor(), targeting, super.getX(), super.getY());
 	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean sameColor(Piece piece) {
-		return color == piece.getColor();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean equals(Piece piece) {
-		return this.x == piece.getX() &&
-				   this.y == piece.getY() && 
-				   this.type == piece.getType() &&
-				   this.color == piece.getColor();
-	}
-	
-	@Override
-	public String toString() {
-		return type.toString() + x + y;
-	}
-
 }
