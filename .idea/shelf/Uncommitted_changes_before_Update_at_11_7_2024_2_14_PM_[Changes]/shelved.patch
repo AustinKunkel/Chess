@@ -1,0 +1,355 @@
+Index: bin/.gitignore
+===================================================================
+diff --git a/bin/.gitignore b/bin/.gitignore
+deleted file mode 100644
+--- a/bin/.gitignore	(revision 805b0e129a3ba7713a336a0a1314505726984149)
++++ /dev/null	(revision 805b0e129a3ba7713a336a0a1314505726984149)
+@@ -1,1 +0,0 @@
+-/game/
+Index: src/game/CheckDiags.java
+===================================================================
+diff --git a/src/game/CheckDiags.java b/src/game/CheckDiags.java
+deleted file mode 100644
+--- a/src/game/CheckDiags.java	(revision 805b0e129a3ba7713a336a0a1314505726984149)
++++ /dev/null	(revision 805b0e129a3ba7713a336a0a1314505726984149)
+@@ -1,291 +0,0 @@
+-package game;
+-
+-import java.util.HashSet;
+-import java.util.Set;
+-
+-public class CheckDiags {
+-	
+-	private static Set<Coordinate> canTarget;
+-	
+-	private static Piece breakPiece = null;
+-	
+-	private static Piece currPiece = null;
+-
+-	public CheckDiags() {}
+-	
+-	/**
+-	 * Iterates through each diagonal to check.
+-	 * @param board
+-	 * @param color
+-	 * @param targeting
+-	 * @param x
+-	 * @param y
+-	 * @return Set<Coordinate> of places the piece CAN target, but are not directly.
+-	 */
+-	public static Set<Coordinate> checkDiags(Piece[][] board,
+-								  PieceColor color,
+-								  Set<Coordinate> targeting,
+-								  int x,
+-								  int y) {
+-		
+-		canTarget = new HashSet<>();
+-		
+-		bL(board, x, y, targeting, color,1);
+-		
+-		tL(board, x, y, targeting, color,1);
+-		
+-		tR(board, x, y, targeting, color,1);
+-		
+-		bR(board, x, y, targeting, color,1);
+-		
+-		return canTarget;
+-	}
+-	
+-	
+-	/**
+-	 * Similar method to checkLines. starts from center and branches outward.
+-	 * will then call again so that it can see if the next piece is a king.
+-	 * helpful for determining moves in advance.
+-	 * @param board
+-	 * @param x
+-	 * @param y
+-	 * @param targeting
+-	 * @param color
+-	 * @param iteration
+-	 */
+-	private static boolean bL(Piece[][] board, int x, int y,  Set<Coordinate> targeting, PieceColor color, int iteration) {
+-		int tempX = x - 1;
+-		int tempY = y - 1;
+-		
+-		while(tempX >= 0 && tempY >= 0) {
+-			currPiece = board[tempY][tempX];
+-			
+-			if(currPiece != null) {
+-				if(!sameColor(currPiece, color)) {
+-					targeting.add(new Coordinate(tempX, tempY));
+-					
+-					//if king is in check
+-					if(currPiece.getType() == PieceType.KING) {
+-						return true;
+-					}
+-					
+-					//so we can keep track of the piece that we need to update
+-					if(iteration < 2) {
+-						breakPiece = currPiece;
+-					}
+-				}
+-				break;
+-			}
+-			
+-			targeting.add(new Coordinate(tempX, tempY));
+-			tempX--;
+-			tempY--;
+-		}
+-		
+-		if(iteration < 2) {
+-			iteration++;
+-			if(bL(board, tempX, tempY, canTarget, color, iteration)) {// if king is in check
+-				if(breakPiece != null) {// and there was a piece before it
+-					// update that piece's targeting 
+-					updatePieceTargetingIfCheck(breakPiece, currPiece.getTargeting());
+-				}	
+-			}
+-		}
+-		
+-		breakPiece = null;
+-		
+-		return false;
+-	}
+-	
+-	/**
+-	 * Similar method to checkLines. starts from center and branches outward.
+-	 * will then call again so that it can see if the next piece is a king.
+-	 * helpful for determining moves in advance.
+-	 * @param board
+-	 * @param x
+-	 * @param y
+-	 * @param targeting
+-	 * @param color
+-	 * @param iteration
+-	 */
+-	private static boolean tL(Piece[][] board, int x, int y,  Set<Coordinate> targeting, PieceColor color, int iteration) {
+-		int tempX = x - 1;
+-		int tempY = y + 1;
+-		
+-		while(tempX >= 0 && tempY < board.length) {
+-			currPiece = board[tempY][tempX];
+-			
+-			if(currPiece != null) {
+-				if(!sameColor(currPiece, color)) {
+-					targeting.add(new Coordinate(tempX, tempY));
+-					
+-					// if king is in check
+-					if(currPiece.getType() == PieceType.KING) {
+-						return true;
+-					}
+-					
+-					// so we can keep track of the piece that we need to update
+-					if(iteration < 2) {
+-						breakPiece = currPiece;
+-					}
+-				}
+-				
+-				break;
+-			}
+-			
+-			targeting.add(new Coordinate(tempX, tempY));
+-			tempX--;
+-			tempY++;
+-		}
+-		
+-		if(iteration < 2) {
+-			iteration++;
+-			if(tL(board, tempX, tempY, canTarget, color, iteration)) {// if king is in check
+-				if(breakPiece != null) {// and there was a piece before it
+-					// update that piece's targeting 
+-					updatePieceTargetingIfCheck(breakPiece, currPiece.getTargeting());
+-				}	
+-			}
+-		}
+-		
+-		breakPiece = null;
+-		
+-		return false;
+-	}
+-	
+-	/**
+-	 * Similar method to checkLines. starts from center and branches outward.
+-	 * will then call again so that it can see if the next piece is a king.
+-	 * helpful for determining moves in advance.
+-	 * @param board
+-	 * @param x
+-	 * @param y
+-	 * @param targeting
+-	 * @param color
+-	 * @param iteration
+-	 */
+-	private static boolean tR(Piece[][] board, int x, int y,  Set<Coordinate> targeting, PieceColor color, int iteration) {
+-		int tempX = x + 1;
+-		int tempY = y + 1;
+-		
+-		while(tempX < board[0].length && tempY < board.length) {
+-			currPiece = board[tempY][tempX];
+-			
+-			if(currPiece != null) {
+-				if(!sameColor(currPiece, color)) {
+-					targeting.add(new Coordinate(tempX, tempY));
+-					
+-					//if king is in check
+-					if(currPiece.getType() == PieceType.KING) {
+-						return true;
+-					}
+-					
+-					//so we can keep track of the piece that we need to update
+-					if(iteration < 2) {
+-						breakPiece = currPiece;
+-					}
+-				}
+-
+-				break;
+-			}
+-			
+-			targeting.add(new Coordinate(tempX, tempY));
+-			tempX++;
+-			tempY++;
+-		}
+-		
+-		if(iteration < 2) {
+-			iteration++;
+-			if(tR(board, tempX, tempY, canTarget, color, iteration)) {// if king is in check
+-				if(breakPiece != null) {// and there was a piece before it
+-					// update that piece's targeting 
+-					updatePieceTargetingIfCheck(breakPiece, currPiece.getTargeting());
+-				}	
+-			}
+-		}
+-		
+-		breakPiece = null;
+-		
+-		return false;
+-	}
+-	
+-	/**
+-	 * Similar method to checkLines. starts from center and branches outward.
+-	 * will then call again so that it can see if the next piece is a king.
+-	 * helpful for determining moves in advance.
+-	 * @param board
+-	 * @param x
+-	 * @param y
+-	 * @param targeting
+-	 * @param color
+-	 * @param iteration
+-	 * @return true if king is in check
+-	 */
+-	private static boolean bR(Piece[][] board, int x, int y,  Set<Coordinate> targeting, PieceColor color, int iteration) {
+-		int tempX = x + 1;
+-		int tempY = y - 1;
+-		
+-		while(tempX < board[0].length && tempY >= 0) {
+-			currPiece = board[tempY][tempX];
+-			
+-			if(currPiece != null) {
+-				if(!sameColor(currPiece, color)) {
+-					targeting.add(new Coordinate(tempX, tempY));
+-					
+-					//if king is in check
+-					if(currPiece.getType() == PieceType.KING) {
+-						return true;
+-					}
+-					
+-					//so we can keep track of the piece that we need to change
+-					if(iteration < 2) {
+-						breakPiece = currPiece;
+-					}
+-				}
+-
+-				break;
+-			}
+-			
+-			targeting.add(new Coordinate(tempX, tempY));
+-			tempX++;
+-			tempY--;
+-		}
+-		
+-		if(iteration < 2) {
+-			iteration++;
+-			if(bR(board, tempX, tempY, canTarget, color, iteration)) {// if king is in check
+-				if(breakPiece != null) {// and there was a piece before it
+-					// update that piece's targeting 
+-					updatePieceTargetingIfCheck(breakPiece, currPiece.getTargeting());
+-				}	
+-			}
+-		}
+-		
+-		breakPiece = null;
+-		
+-		return false;
+-	}
+-	public static boolean sameColor(Piece piece, PieceColor color) {
+-		return color == piece.getColor();
+-	}
+-	
+-	/**
+-	 * keeps intersection of piece and targeting of piece
+-	 * that can check king
+-	 * @param piece
+-	 * @param targeting => Set of the piece that is targeting the king
+-	 */
+-	private static void updatePieceTargetingIfCheck(Piece piece, Set<Coordinate> targeting) {
+-		Set<Coordinate> pieceTargeting = piece.getTargeting();
+-		Set<Coordinate> intersection = new HashSet<>();
+-		
+-		for(Coordinate coord : targeting) {
+-			if(pieceTargeting.contains(coord)) {
+-				intersection.add(coord);
+-			}	
+-		}
+-		
+-		piece.setTargeting(intersection);
+-	}
+-
+-}
+Index: src/game/Piece.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package game;\r\n\r\nimport java.util.Set;\r\n\r\npublic abstract class Piece {\r\n\t\r\n\tprivate int x, y, move;\r\n\tprivate PieceColor color;\r\n\tprivate PieceType type;\r\n\tprivate Set<Coordinate> targeting;\r\n\t\r\n\tpublic Piece(int x, int y, PieceColor color, PieceType type, Set<Coordinate> targeting) {\r\n\t\tthis.x = x;\r\n\t\tthis.y = y;\r\n\t\tthis.color = color;\r\n\t\tthis.type = type;\r\n\t\tthis.targeting = targeting;\r\n\t\tthis.move = 0;\r\n\t}\r\n\r\n\t/**\r\n\t * \r\n\t * @returnx y position in the array\r\n\t */\r\n\tpublic int getX() {\r\n\t\treturn this.x;\r\n\t}\r\n\t\r\n\t/**\r\n\t * @param x\r\n\t */\r\n\tpublic void setX(int x) {\r\n\t\tthis.x = x;\r\n\t}\r\n\t\r\n\tpublic int getMove() {\r\n\t\treturn this.move;\r\n\t}\r\n\t\r\n\t/***\r\n\t * \r\n\t * @return the rank (y + 1)\r\n\t */\r\n\tpublic int getRank() {\r\n\t\treturn this.y + 1;\r\n\t}\r\n\t\r\n\tpublic char getFile() {\r\n\t\treturn switch(this.x) {\r\n\t\tcase 0 -> 'a';\r\n\t\tcase 1 -> 'b';\r\n\t\tcase 2 -> 'c';\r\n\t\tcase 3 -> 'd';\r\n\t\tcase 4 -> 'e';\r\n\t\tcase 5 -> 'f';\r\n\t\tcase 6 -> 'g';\r\n\t\tcase 7 -> 'h';\r\n\t\tdefault -> 'i';\r\n\t\t};\r\n\t}\r\n\t\r\n\tpublic Coordinate getCoord() {\r\n\t\treturn new Coordinate(this.x, this.y);\r\n\t}\r\n\r\n\t/**\r\n\t * \r\n\t * @return y position in the array\r\n\t */\r\n\tpublic int getY() {\r\n\t\treturn this.y;\r\n\t}\r\n\t\r\n\t/**\r\n\t * \r\n\t * @param y\r\n\t */\r\n\tpublic void setY(int y) {\r\n\t\tthis.y = y;\r\n\t}\r\n\t\r\n\t/**\r\n\t * Sets the position to the x and y values\r\n\t * @param x\r\n\t * @param y\r\n\t */\r\n\tpublic void setPos(int x, int y) {\r\n\t\tthis.x = x;\r\n\t\tthis.y = y;\r\n\t\tthis.move++;\r\n\t}\r\n\t\r\n\t\r\n\t/**\r\n\t * \r\n\t * @return type of the piece\r\n\t */\r\n\tpublic PieceType getType() {\r\n\t\treturn this.type;\r\n\t}\r\n\t\r\n\t/**\r\n\t * \r\n\t * @return piece's color\r\n\t */\r\n\tpublic PieceColor getColor() {\r\n\t\treturn this.color;\r\n\t}\r\n\t\r\n\t/**\r\n\t * \r\n\t * @return a Set<Coordinate> of the pieces being targeted\r\n\t */\r\n\tpublic Set<Coordinate> getTargeting() {\r\n\t\treturn this.targeting;\r\n\t}\r\n\t\r\n\t/**\r\n\t * Sets the targeting map to the new one\r\n\t * @param update\r\n\t */\r\n\tpublic void setTargeting(Set<Coordinate> update) {\r\n\t\tthis.targeting = update;\r\n\t}\r\n\t\r\n\t/**\r\n\t * updates the piece's targeting list\r\n\t * with the current spots its targeting.\r\n\t * @param board\r\n\t */\r\n\tabstract public void updateTargeting(Piece[][] board);\r\n\t\r\n\t/**\r\n\t * @param piece2\r\n\t * @return true if the colors are the same, false otherwise\r\n\t */\r\n\tpublic boolean sameColor(Piece piece) {\r\n\t\treturn piece.getColor().equals(this.color);\r\n\t}\r\n\t\r\n\t/**\r\n\t * \r\n\t * @param piece to be compared to\r\n\t * @return true if the piece is the same piece;\r\n\t * \t\t   false if the piece is a different one\r\n\t */\r\n\tpublic boolean equals(Piece piece) {\r\n\t\treturn this.x == piece.getX() &&\r\n\t\t\t\t   this.y == piece.getY() && \r\n\t\t\t\t   this.type == piece.getType() &&\r\n\t\t\t\t   this.color == piece.getColor();\r\n\t}\r\n\t\r\n\tpublic String toString() {\r\n\t\tString string = type.toString() + getFile() + getRank();\r\n\t\tif(this.color.equals(PieceColor.BLACK)) {\r\n\t\t\treturn string.toLowerCase() + \" \" + this.color;\r\n\t\t} else {\r\n\t\t\treturn string + \" \" + this.color;\r\n\t\t}\r\n\t}\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/game/Piece.java b/src/game/Piece.java
+--- a/src/game/Piece.java	(revision 805b0e129a3ba7713a336a0a1314505726984149)
++++ b/src/game/Piece.java	(date 1731006296013)
+@@ -123,6 +123,12 @@
+ 		this.targeting = update;
+ 	}
+ 	
++	/**
++	 * 
++	 * @return a Set<Coordinate> of the pieces of the same color being targeted
++	 */
++	public Set<Coordinate> getSameColorTargeting();
++	
+ 	/**
+ 	 * updates the piece's targeting list
+ 	 * with the current spots its targeting.
+Index: .project
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<projectDescription>\r\n\t<name>Chessv2</name>\r\n\t<comment></comment>\r\n\t<projects>\r\n\t</projects>\r\n\t<buildSpec>\r\n\t\t<buildCommand>\r\n\t\t\t<name>org.eclipse.jdt.core.javabuilder</name>\r\n\t\t\t<arguments>\r\n\t\t\t</arguments>\r\n\t\t</buildCommand>\r\n\t</buildSpec>\r\n\t<natures>\r\n\t\t<nature>org.eclipse.jdt.core.javanature</nature>\r\n\t</natures>\r\n</projectDescription>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.project b/.project
+--- a/.project	(revision 805b0e129a3ba7713a336a0a1314505726984149)
++++ b/.project	(date 1731006296009)
+@@ -14,4 +14,15 @@
+ 	<natures>
+ 		<nature>org.eclipse.jdt.core.javanature</nature>
+ 	</natures>
++	<filteredResources>
++		<filter>
++			<id>1715730973931</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
+ </projectDescription>
