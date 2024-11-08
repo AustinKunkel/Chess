@@ -4,14 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Queen extends Piece {
-	private PieceColor color;//color of the piece
-	
-	private Set<Coordinate> targeting;// Rows and columns being targeted
 
 	public Queen(int x, int y, PieceColor color) {
 		super(x, y, color, PieceType.QUEEN, new HashSet<Coordinate>());
-		this.color = color;
-		this.targeting = super.getTargeting();
 	}
 
 	/**
@@ -19,14 +14,14 @@ public class Queen extends Piece {
 	 */
 	@Override
 	public void updateTargeting(Piece[][] board) {
+		Set<Coordinate> targeting = super.getTargeting();
 		targeting.clear();
 		
 		int x = super.getX();
 		int y = super.getY();
 		
-		CheckLines.checkLines(board, color, targeting, x, y);
+		CheckLines.checkLines(board, super.getColor(), targeting, x, y);
 		
-		CheckDiags.checkDiags(board, color, targeting, x, y);
-
+		CheckDiags.checkDiags(board, super.getColor(), targeting, x, y);
 	}
 }

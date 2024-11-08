@@ -3,15 +3,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Pawn extends Piece{
-	
-	private PieceColor color;//color of the piece
-	
-	private Set<Coordinate> targeting;
 
 	public Pawn(int x, int y, PieceColor color) {
 		super(x, y, color, PieceType.PAWN, new HashSet<Coordinate>());
-		this.color = color;
-		this.targeting = super.getTargeting();
 	}
 	
 	/**
@@ -19,22 +13,22 @@ public class Pawn extends Piece{
 	 */
 	@Override
 	public void updateTargeting(Piece[][] board) {
-		targeting.clear();
+		super.getTargeting().clear();
 		
 		int factor = 1;
 		int border = board.length;
 		
-		if(this.color == PieceColor.BLACK) {
+		if(super.getColor() == PieceColor.BLACK) {
 			factor = -1;
 			border = -1;
 		}
 		
 		// checks the spots forward
 		// and diagonal when applicable
-		checkForward(factor, border, board);
+		boolean spotIsClear = checkForward(factor, border, board);
 		
 		// now we check for 2 spaces in front when its the first move
-		if(super.getMove() == 0) {
+		if(super.getMove() == 0 && spotIsClear) {
 			factor = factor * 2;
 			checkForward(factor, border, board);
 		}	
@@ -48,14 +42,19 @@ public class Pawn extends Piece{
 	 * @param factor
 	 * @param border
 	 * @param board
+	 * @return false if there is a piece in front of it
 	 */
-	private void checkForward(int factor, int border, Piece[][] board) {
+	private boolean checkForward(int factor, int border, Piece[][] board) {
+		Set<Coordinate> targeting = super.getTargeting();
 		int x = super.getX();
 		int y = super.getY();
+		boolean flag = true;
 		if(!(y + factor == border)) {
 			// check forward to see if a piece isnt there:
 			if(board[y + factor][x] == null) {
-				this.targeting.add(new Coordinate(x, y + factor));
+				targeting.add(new Coordinate(x, y + factor));
+			} else {
+				flag = false;
 			}
 			
 			// if we're only moving forward 1 space
@@ -76,5 +75,6 @@ public class Pawn extends Piece{
 			}
 			
 		}
+		return flag;
 	}
 }

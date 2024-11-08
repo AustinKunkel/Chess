@@ -72,7 +72,6 @@ public abstract class Piece {
 	}
 	
 	/**
-	 * 
 	 * @param y
 	 */
 	public void setY(int y) {
@@ -117,27 +116,23 @@ public abstract class Piece {
 	
 	/**
 	 * Sets the targeting map to the new one
-	 * @param update
+	 * Clears old and adds new to not destroy the other pieces
+	 * @param update set that targeting will be set to
 	 */
 	public void setTargeting(Set<Coordinate> update) {
-		this.targeting = update;
+		this.targeting.clear();
+		this.targeting.addAll(update);
 	}
-	
-	/**
-	 * 
-	 * @return a Set<Coordinate> of the pieces of the same color being targeted
-	 */
-	public Set<Coordinate> getSameColorTargeting();
 	
 	/**
 	 * updates the piece's targeting list
 	 * with the current spots its targeting.
-	 * @param board
+	 * @param board game board
 	 */
 	abstract public void updateTargeting(Piece[][] board);
 	
 	/**
-	 * @param piece2
+	 * @param piece
 	 * @return true if the colors are the same, false otherwise
 	 */
 	public boolean sameColor(Piece piece) {

@@ -216,8 +216,7 @@ public class Game {
 	/**
 	 * Moves the selected piece into the desired x, y coordinate
 	 * @param piece to be moved
-	 * @param x => x position to be moved
-	 * @param y => y position to be moved
+	 * @param c coordinate to be moved to
 	 * @return true if space can be moved to, false otherwise
 	 */
 	private static boolean move(Piece piece, Coordinate c) {
@@ -349,10 +348,9 @@ public class Game {
 				}
 			}
 		}
-		
-		
+
 		if(wKing != null) {
-			updateMoveIfInCheck(getAllPieceByColor(PieceColor.BLACK), wKing);
+			if(!updateMoveIfInCheck(getAllPieceByColor(PieceColor.BLACK), wKing)) { checkMate(); }
 //			checkList = getCheckList( allPieces.get(allPieces.indexOf(wKing)));
 //			if(!checkList.isEmpty()) {
 //				if(!updateMoveIfInCheck(getAllPieceByColor(PieceColor.BLACK), wKing)) checkMate();
@@ -361,7 +359,7 @@ public class Game {
 			checkMate();
 		}
 		if(bKing != null) {
-			updateMoveIfInCheck(getAllPieceByColor(PieceColor.WHITE), bKing);
+			if(!updateMoveIfInCheck(getAllPieceByColor(PieceColor.WHITE), bKing)) { checkMate(); }
 //			checkList = getCheckList( allPieces.get(allPieces.indexOf(bKing)));
 //			if(!checkList.isEmpty()) {
 //				if(!updateMoveIfInCheck(checkList, bKing)) checkMate();
@@ -379,103 +377,106 @@ public class Game {
 	/**
 	 * Goes through checklist and sees how the pieces can move if king
 	 * is in check
-	 * @param checkList
+	 * @param colorPieces all pieces of a specific color (or whatever)
 	 * @param king
 	 * @return true if there is a place to move; false if checkmate
 	 */
-	private static boolean updateMoveIfInCheck(List<Piece> checkList, Piece king) {
-		
-		boolean flag = false; // true if a piece can move
-		
+	private static boolean updateMoveIfInCheck(List<Piece> colorPieces, Piece king) {
+
+
 		List<Piece> listOfKingColor = getAllPieceByColor(king.getColor());
-		
+
 		listOfKingColor.remove(king);
 		// go through each piece that is currently targeting king
 		// and update the list of pieces that can move out of the
 		// way
-		for(Piece piece : checkList) {
+		for (Piece piece : colorPieces) {
 			Set<Coordinate> kingTargeting = king.getTargeting();
 			Set<Coordinate> pieceTargeting = piece.getTargeting();
-			
-			boolean kingInCheck = false;
-			
-			// iterates through piece's targeting.
-			// will see if it is in king's targeting. will then remove that spot
-			// from the king's targeting.
-			
-			for(Coordinate pieces : pieceTargeting) {
-				if(pieces.equals(king.getCoord())) {
-					kingInCheck = true;
-					Set<Coordinate> kingTargeted = updateKingMoveIfInCheck(pieceTargeting, kingTargeting);
-					// update piece's targeting to see if it can move to block
-					boolean pieceCanMove = updatePieceMoveIfInCheck(listOfKingColor, kingTargeted);
-					return !king.getTargeting().isEmpty() || flag;
-				}
-				if(kingTargeting.contains(pieces)) {
-					kingTargeting.remove(pieces);
+
+			Double<Set<Piece>, Set<Coordinate>> updatedMove = updateKingMoveIfInCheck(piece, king);
+			Set<Piece> checkList = updatedMove.getFirst();
+			boolean isKingInCheck = !checkList.isEmpty();
+			Set<Coordinate> kingTargeted = updatedMove.getSecond();
+
+			if (isKingInCheck) {
+				System.out.println("King in check!!");
+				if(!updatePieceMoveIfInCheck(listOfKingColor, checkList, kingTargeted) && kingTargeting.isEmpty()) {
+					return false;
 				}
 			}
 		}
-		return !king.getTargeting().isEmpty();
+		return true;
 	}
 	
 	/**
-	 * helper function for updateMoveIfInCheck
-	 * 
-	 * Updates the king's moves to avoid check.
-	 * Does this by getting places where it cannot move and removing that fron the king's targeting
-	 * @param entry
-	 * @param kingTargeting
-	 * @return true if king has place to go; false otherwise
+	 * <b>helper function for updateMoveIfInCheck<br>
+	 * Updates the king's moves to avoid check.<br>
+	 * Does this by getting places where it cannot move and removing that from the king's targeting
+	 * @param piece piece that might target the king
+	 * @param king
+	 * @return Double => Set of Pieces that are targeting the king, and a set of spots the king cannot move to due to check
 	 */
-	private static Set<Coordinate> updateKingMoveIfInCheck(Set<Coordinate> pieceTargeting, Set<Coordinate> kingTargeting) {
+	private static Double<Set<Piece>, Set<Coordinate>> updateKingMoveIfInCheck(Piece piece, Piece king) {
+
+		Set<Coordinate> pieceTargeting = piece.getTargeting();
+
+		//boolean for if the piece is a pawn, but it cannot attack the king (is right in front of it)
+		boolean isPawnClear = piece.getType().equals(PieceType.PAWN) && (piece.getX() == king.getX());
 		
+		Set<Piece> checkList = new HashSet<>();
 		Set<Coordinate> targeted = new HashSet<>();
-		
+
+		Set<Coordinate> kingTargeting = king.getTargeting();
+
 		for(Coordinate coord : pieceTargeting) {
-			if(kingTargeting.contains(coord)) {
-				targeted.add(coord);
+			if(kingTargeting.contains(coord) && !isPawnClear) {
 				kingTargeting.remove(coord);
-			}		
+				targeted.add(coord);
+			}
+			if(coord.equals(king.getCoord())) {
+				checkList.add(piece);
+			}
 		}
-		return targeted;	
+		return new Double<>(checkList, targeted);
 	}
 	
 	/**
 	 * helper function for updateMoveIfInCheck
-	 * 
-	 * Updated all of the piece's moves to see
-	 * if it can block a check.
+	 * Updates all the piece's moves to see if it can block a check.
 	 * Does this by getting the intersection of
 	 * the pieces of the same color and the
 	 * map of the piece that is targeting the king
 	 * @param sameColor => List of pieces of the same color
-	 * @param targeting => Map of targeting coordinates
+	 * @param checkList => Map of pieces that are checking the kings
+	 * @param kingTargeted => Set of Coordinates that the king could not go
 	 * @return true if there is a place to block the check; false otherwise
 	 */
-	private static boolean updatePieceMoveIfInCheck(List<Piece> sameColor, Set<Coordinate> targeting) {
-		boolean flag = true;
+	private static boolean updatePieceMoveIfInCheck(List<Piece> sameColor, Set<Piece> checkList, Set<Coordinate> kingTargeted) {
+		boolean flag = false;
 	
 		for(Piece piece : sameColor) {
 			Set<Coordinate> intersection = new HashSet<>();
 			Set<Coordinate> pieceTargeting = piece.getTargeting();
-			
-			for(Coordinate coord : targeting) {
-				if(pieceTargeting.contains(coord)) {
+
+			for (Coordinate coord : kingTargeted) {
+				if (pieceTargeting.contains(coord)) {
 					intersection.add(coord);
-				}	
+				}
 			}
-			
+
+			for(Piece targeting : checkList) { // if the piece of the same color can take the checking piece
+				if(pieceTargeting.contains(targeting.getCoord())) {
+					intersection.add(targeting.getCoord());
+				}
+			}
+
 			piece.setTargeting(intersection);
-			
-			if(intersection.size() <= 0) {
-				flag = false;
-			} else {
+
+			if (!intersection.isEmpty()) {
 				flag = true;
 			}
 		}
-		
-		System.out.println(flag);
 		return flag;
 	}
 }

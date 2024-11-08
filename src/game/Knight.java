@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Knight extends Piece {
-	private Set<Coordinate> targeting;// Rows and columns being targeted
+	private final Set<Coordinate> targeting;// Rows and columns being targeted
 
 	public Knight(int x, int y, PieceColor color) {
 		super(x, y, color, PieceType.KNIGHT, new HashSet<Coordinate>());

@@ -4,12 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class King extends Piece{
-	
-	private Set<Coordinate> targeting;// Rows and columns being targeted
 
 	public King(int x, int y, PieceColor color) {
 		super(x, y, color, PieceType.KING, new HashSet<Coordinate>());
-		this.targeting = super.getTargeting();
 	}
 
 	/**
@@ -17,7 +14,7 @@ public class King extends Piece{
 	 */
 	@Override
 	public void updateTargeting(Piece[][] board) {
-		targeting.clear();
+		super.getTargeting().clear();
 		int y = super.getY();
 		
 		if(y + 1 <= board.length - 1) { // if not on the upper edge,
@@ -39,7 +36,9 @@ public class King extends Piece{
 	 * @param board
 	 */
 	private void checkRow(Piece[] board, int row) {
-		
+
+		Set<Coordinate> targeting = super.getTargeting();
+
 		int x = super.getX();
 		int y = super.getY();
 		
@@ -48,9 +47,9 @@ public class King extends Piece{
 			
 			if(board[x] != null) {
 				if(!sameColor(board[x]))
-					this.targeting.add(new Coordinate(x, row));
+					targeting.add(new Coordinate(x, row));
 			} else {
-				this.targeting.add(new Coordinate(x, row));
+				targeting.add(new Coordinate(x, row));
 			}
 		}
 		
@@ -58,9 +57,9 @@ public class King extends Piece{
 		if(!(x - 1 < 0)) {
 			if(board[x - 1] != null) {
 				if(!sameColor(board[x - 1])) 
-					this.targeting.add(new Coordinate(x - 1, row)); // left
+					targeting.add(new Coordinate(x - 1, row)); // left
 			}else {
-				this.targeting.add(new Coordinate(x - 1, row)); // left
+				targeting.add(new Coordinate(x - 1, row)); // left
 			}
 		}
 		if(!(x + 1 == board.length)) {

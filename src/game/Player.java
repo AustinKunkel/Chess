@@ -5,9 +5,9 @@ import java.util.List;
 
 public class Player {
 	
-	private PieceColor color;
-	private List<Piece> currentPieces;
-	private List<Piece> takenPieces;
+	private final PieceColor color;
+	private final List<Piece> currentPieces;
+	private final List<Piece> takenPieces;
 	private int moveNum;
 
 	public Player(PieceColor color, List<Piece> currentPieces) {
