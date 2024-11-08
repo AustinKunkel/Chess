@@ -1,10 +1,8 @@
 package game;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -29,7 +27,7 @@ public class Game {
 									  {new Pawn(0,6, black),new Pawn(1,6, black), new Pawn(2,6, black), new Pawn(3,6, black), new Pawn(4,6, black), new Pawn(5,6, black), new Pawn(6,6, black), new Pawn(7,6, black)},
 									  {new Rook(0,7, black), new Knight(1,7, black), new Bishop(2,7, black), new Queen(3,7, black), new King(4,7, black), new Bishop(5,7, black), new Knight(6,7, black), new Rook(7,7, black)}};
 	
-	private static List<Piece> allPieces = new ArrayList<>();
+	private static final List<Piece> allPieces = new ArrayList<>();
 
 	public static void main(String[] args) {
 		
@@ -64,6 +62,7 @@ public class Game {
 			updateAllTargeted();
 			for(Piece piece : allPieces) {
 				System.out.println(piece.toString() + ", is targeting: " + piece.getTargeting());
+				//System.out.println(piece.toString() + ", can target: " + piece.getCanTarget());
 			}
 			
 			System.out.println(playerColor + "'s move");
@@ -72,7 +71,7 @@ public class Game {
 			if(sc.hasNextLine()) {
 				line = sc.nextLine().trim();
 			}
-			while(!isValidInput(line)) {
+			while(invalidInput(line)) {
 				System.out.println("Invalid input, please enter a valid input in chess notation <piece letter><file letter><rank number>");
 				if(sc.hasNextLine()) {
 					line = sc.nextLine().trim();
@@ -86,7 +85,7 @@ public class Game {
 				if(sc.hasNextLine()) {
 					line = sc.nextLine().trim();
 				}
-				while(!isValidInput(line)) {
+				while(invalidInput(line)) {
 					System.out.println("Invalid input, please enter a valid input in chess notation <piece letter><file letter><rank number>");
 					if(sc.hasNextLine()) {
 						line = sc.nextLine().trim();
@@ -139,10 +138,10 @@ public class Game {
 		
 	}
 	
-	private static boolean isValidInput(String input) {
+	private static boolean invalidInput(String input) {
 		Pattern pattern = Pattern.compile("(?:(?<piece>[KQRBNkqrbn])?(?<file>[a-h])(?<rank>[1-8]))");
 	    Matcher matcher = pattern.matcher(input);
-	    return matcher.matches();
+	    return !matcher.matches();
 	}
 	
 	private static Double<Piece, Coordinate> parseUserInput(String input, PieceColor color) {
@@ -377,35 +376,28 @@ public class Game {
 	/**
 	 * Goes through checklist and sees how the pieces can move if king
 	 * is in check
-	 * @param colorPieces all pieces of a specific color (or whatever)
+	 * @param oppositePieces all pieces of the opposite color of the king
 	 * @param king
 	 * @return true if there is a place to move; false if checkmate
 	 */
-	private static boolean updateMoveIfInCheck(List<Piece> colorPieces, Piece king) {
+	private static boolean updateMoveIfInCheck(List<Piece> oppositePieces, Piece king) {
 
-
-		List<Piece> listOfKingColor = getAllPieceByColor(king.getColor());
-
-		listOfKingColor.remove(king);
 		// go through each piece that is currently targeting king
 		// and update the list of pieces that can move out of the
 		// way
-		for (Piece piece : colorPieces) {
-			Set<Coordinate> kingTargeting = king.getTargeting();
-			Set<Coordinate> pieceTargeting = piece.getTargeting();
+		Set<Coordinate> kingTargeting = king.getTargeting();
 
-			Double<Set<Piece>, Set<Coordinate>> updatedMove = updateKingMoveIfInCheck(piece, king);
+			Double<Set<Piece>, Set<Coordinate>> updatedMove = updateKingMoveIfInCheck(oppositePieces, king);
 			Set<Piece> checkList = updatedMove.getFirst();
 			boolean isKingInCheck = !checkList.isEmpty();
 			Set<Coordinate> kingTargeted = updatedMove.getSecond();
 
 			if (isKingInCheck) {
 				System.out.println("King in check!!");
-				if(!updatePieceMoveIfInCheck(listOfKingColor, checkList, kingTargeted) && kingTargeting.isEmpty()) {
-					return false;
-				}
+				List<Piece> listOfKingColor = getAllPieceByColor(king.getColor());
+
+				return updatePieceMoveIfInCheck(listOfKingColor, checkList, kingTargeted) || !kingTargeting.isEmpty();
 			}
-		}
 		return true;
 	}
 	
@@ -413,29 +405,33 @@ public class Game {
 	 * <b>helper function for updateMoveIfInCheck<br>
 	 * Updates the king's moves to avoid check.<br>
 	 * Does this by getting places where it cannot move and removing that from the king's targeting
-	 * @param piece piece that might target the king
+	 * @param oppositePieces List of pieces opposite that of the king color
 	 * @param king
 	 * @return Double => Set of Pieces that are targeting the king, and a set of spots the king cannot move to due to check
 	 */
-	private static Double<Set<Piece>, Set<Coordinate>> updateKingMoveIfInCheck(Piece piece, Piece king) {
-
-		Set<Coordinate> pieceTargeting = piece.getTargeting();
-
-		//boolean for if the piece is a pawn, but it cannot attack the king (is right in front of it)
-		boolean isPawnClear = piece.getType().equals(PieceType.PAWN) && (piece.getX() == king.getX());
-		
+	private static Double<Set<Piece>, Set<Coordinate>> updateKingMoveIfInCheck(List<Piece> oppositePieces, Piece king) {
 		Set<Piece> checkList = new HashSet<>();
 		Set<Coordinate> targeted = new HashSet<>();
 
-		Set<Coordinate> kingTargeting = king.getTargeting();
+		for(Piece piece : oppositePieces) {
+			//boolean for if the piece is a pawn, but it cannot attack the king (is right in front of it)
+			boolean isPawnClear = piece.getType().equals(PieceType.PAWN) && (piece.getX() == king.getX());
+			Set<Coordinate> kingTargeting = king.getTargeting();
 
-		for(Coordinate coord : pieceTargeting) {
-			if(kingTargeting.contains(coord) && !isPawnClear) {
-				kingTargeting.remove(coord);
-				targeted.add(coord);
+			for(Piece otherPiece : oppositePieces) { // checks to see if a piece is protected by another one
+				if(otherPiece.canTarget(piece.getCoord())) {
+					kingTargeting.remove(piece.getCoord()); // if so, remove that from the king's targeting
+				}
 			}
-			if(coord.equals(king.getCoord())) {
-				checkList.add(piece);
+
+			for (Coordinate coord : piece.getTargeting()) {
+				if (kingTargeting.contains(coord) && !isPawnClear) {
+					kingTargeting.remove(coord);
+					targeted.add(coord);
+				}
+				if (coord.equals(king.getCoord())) {
+					checkList.add(piece);
+				}
 			}
 		}
 		return new Double<>(checkList, targeted);
@@ -466,6 +462,11 @@ public class Game {
 			}
 
 			for(Piece targeting : checkList) { // if the piece of the same color can take the checking piece
+				for(Coordinate coord : targeting.getTargeting()) { // grabs the intersection of the pieces, to see if it can block a check
+					if(pieceTargeting.contains(coord)) { // if it can move to block
+						intersection.add(coord);
+					}
+				}
 				if(pieceTargeting.contains(targeting.getCoord())) {
 					intersection.add(targeting.getCoord());
 				}

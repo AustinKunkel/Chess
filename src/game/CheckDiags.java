@@ -70,6 +70,8 @@ public class CheckDiags {
                     if(iteration < 2) {
                         breakPiece = currPiece;
                     }
+                } else if (iteration < 2) { // if it's the first iteration and the colors match
+                    canTarget.add(new Coordinate(tempX, tempY)); // add the piece that is the same color to the canTarget set
                 }
                 break;
             }
@@ -125,8 +127,9 @@ public class CheckDiags {
                     if(iteration < 2) {
                         breakPiece = currPiece;
                     }
+                } else if (iteration < 2) { // if it's the first iteration and the colors match
+                    canTarget.add(new Coordinate(tempX, tempY)); // add the piece that is the same color to the canTarget set
                 }
-
                 break;
             }
 
@@ -181,6 +184,8 @@ public class CheckDiags {
                     if(iteration < 2) {
                         breakPiece = currPiece;
                     }
+                } else if (iteration < 2) { // if it's the first iteration and the colors match
+                    canTarget.add(new Coordinate(tempX, tempY)); // add the piece that is the same color to the canTarget set
                 }
                 break;
             }
@@ -237,6 +242,8 @@ public class CheckDiags {
                     if(iteration < 2) {
                         breakPiece = currPiece;
                     }
+                } else if (iteration < 2) { // if it's the first iteration and the colors match
+                    canTarget.add(new Coordinate(tempX, tempY)); // add the piece that is the same color to the canTarget set
                 }
                 break;
             }
@@ -266,7 +273,10 @@ public class CheckDiags {
 
     /**
      * keeps intersection of piece and targeting of piece
-     * that can check king
+     * that can check king<br>
+     * Only keeps the "pinning" portion of the piece that is being pinned<br>
+     * that is, if there is a bishop blocking a king, it will only keep the bishops
+     * direct line of sight
      * @param piece
      * @param targeting => Set of the piece that is targeting the king
      */

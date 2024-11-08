@@ -70,6 +70,8 @@ public class CheckLines {
 					if(iteration < 2) {
 						breakPiece = currPiece;
 					}
+				} else if (iteration < 2) { // if it's the first iteration and the colors match
+					canTarget.add(new Coordinate(tempX, y)); // add the piece that is the same color to the canTarget set
 				}
 				break;
 			} 
@@ -125,6 +127,8 @@ public class CheckLines {
 					if(iteration < 2) {
 						breakPiece = currPiece;
 					}
+				} else if (iteration < 2) { // if it's the first iteration and the colors match
+					canTarget.add(new Coordinate(tempX, y)); // add the piece that is the same color to the canTarget set
 				}
 				
 				break;
@@ -181,6 +185,8 @@ public class CheckLines {
 					if(iteration < 2) {
 						breakPiece = currPiece;
 					}
+				} else if (iteration < 2) { // if it's the first iteration and the colors match
+					canTarget.add(new Coordinate(x, tempY)); // add the piece that is the same color to the canTarget set
 				}
 				break;
 			}
@@ -236,6 +242,8 @@ public class CheckLines {
 					if(iteration < 2) {
 						breakPiece = currPiece;
 					}
+				} else if (iteration < 2) { // if it's the first iteration and the colors match
+					canTarget.add(new Coordinate(x, tempY)); // add the piece that is the same color to the canTarget set
 				}
 				break;
 			}

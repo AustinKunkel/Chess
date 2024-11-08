@@ -1,20 +1,23 @@
 package game;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public abstract class Piece {
 	
 	private int x, y, move;
-	private PieceColor color;
-	private PieceType type;
-	private Set<Coordinate> targeting;
+	private final PieceColor color;
+	private final PieceType type;
+	private final Set<Coordinate> targeting;
+	private final Set<Coordinate> canTarget; // set of coordinates that the
 	
-	public Piece(int x, int y, PieceColor color, PieceType type, Set<Coordinate> targeting) {
+	public Piece(int x, int y, PieceColor color, PieceType type) {
 		this.x = x;
 		this.y = y;
 		this.color = color;
 		this.type = type;
-		this.targeting = targeting;
+		this.targeting = new HashSet<>();
+		this.canTarget = new HashSet<>();
 		this.move = 0;
 	}
 
@@ -130,9 +133,16 @@ public abstract class Piece {
 	 * @param board game board
 	 */
 	abstract public void updateTargeting(Piece[][] board);
+
+	public Set<Coordinate> getCanTarget() { return this.canTarget; }
+
+	/**
+	 * Checks to see if the piece "can target" the coordinate
+	 * @return true if the piece can target the coordinate
+	 */
+	public boolean canTarget(Coordinate coord) { return this.canTarget.contains(coord); }
 	
 	/**
-	 * @param piece
 	 * @return true if the colors are the same, false otherwise
 	 */
 	public boolean sameColor(Piece piece) {

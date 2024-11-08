@@ -5,7 +5,7 @@ import java.util.Set;
 public class Pawn extends Piece{
 
 	public Pawn(int x, int y, PieceColor color) {
-		super(x, y, color, PieceType.PAWN, new HashSet<Coordinate>());
+		super(x, y, color, PieceType.PAWN);
 	}
 	
 	/**
@@ -14,6 +14,7 @@ public class Pawn extends Piece{
 	@Override
 	public void updateTargeting(Piece[][] board) {
 		super.getTargeting().clear();
+		super.getCanTarget().clear();
 		
 		int factor = 1;
 		int border = board.length;
@@ -46,11 +47,12 @@ public class Pawn extends Piece{
 	 */
 	private boolean checkForward(int factor, int border, Piece[][] board) {
 		Set<Coordinate> targeting = super.getTargeting();
+		Set<Coordinate> canTarget = super.getCanTarget();
 		int x = super.getX();
 		int y = super.getY();
-		boolean flag = true;
+		boolean flag = true; // flag to see if a piece is in front of it
 		if(!(y + factor == border)) {
-			// check forward to see if a piece isnt there:
+			// check forward to see if a piece isn't there:
 			if(board[y + factor][x] == null) {
 				targeting.add(new Coordinate(x, y + factor));
 			} else {
@@ -62,14 +64,20 @@ public class Pawn extends Piece{
 				// check diagonal to see if piece is there:
 				if(!(x - 1 < 0)) {
 					if(board[y + factor][x - 1] != null) {
-						if(!sameColor(board[y + factor][x - 1]))
+						if(sameColor(board[y + factor][x - 1])) {
+							canTarget.add(new Coordinate(x - 1, y + factor)); // left
+						} else {
 							targeting.add(new Coordinate(x - 1, y + factor)); // left
+						}
 					}
 				}
 				if(!(x + 1 == board[0].length)) {
 					if(board[y + factor][x + 1] != null) {
-						if(!sameColor(board[y + factor][x + 1]))
+						if(sameColor(board[y + factor][x + 1])) {
+							canTarget.add(new Coordinate(x + 1, y + factor)); // right
+						} else {
 							targeting.add(new Coordinate(x + 1, y + factor)); // right
+						}
 					}
 				}			
 			}

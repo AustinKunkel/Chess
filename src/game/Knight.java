@@ -5,10 +5,12 @@ import java.util.Set;
 
 public class Knight extends Piece {
 	private final Set<Coordinate> targeting;// Rows and columns being targeted
+	private final Set<Coordinate> canTarget;
 
 	public Knight(int x, int y, PieceColor color) {
-		super(x, y, color, PieceType.KNIGHT, new HashSet<Coordinate>());
+		super(x, y, color, PieceType.KNIGHT);
 		this.targeting = super.getTargeting();
+		this.canTarget = super.getCanTarget();
 	}
 
 	/**
@@ -17,6 +19,7 @@ public class Knight extends Piece {
 	@Override
 	public void updateTargeting(Piece[][] board) {
 		this.targeting.clear();
+		this.canTarget.clear();
 		// check right
 		checkRight(board);
 		
@@ -37,9 +40,12 @@ public class Knight extends Piece {
 		if(x + 2 < board[0].length) {
 			// upper
 			if(y + 1 <= board.length - 1) {// if not out of bounds
-				if(board[y + 1][x + 2] != null) {// if its not an empty space
-					if(!sameColor(board[y + 1][x + 2]))
+				if(board[y + 1][x + 2] != null) {// if it's not an empty space
+					if(sameColor(board[y + 1][x + 2])) {
+						this.canTarget.add(new Coordinate(x + 2, y + 1));
+					} else {
 						this.targeting.add(new Coordinate(x + 2, y + 1));
+					}
 				} else {
 					this.targeting.add(new Coordinate(x + 2, y + 1));
 				}
@@ -47,9 +53,12 @@ public class Knight extends Piece {
 			
 			// lower
 			if(y - 1 >= 0) {// if not out of bounds
-				if(board[y - 1][x +2] != null) {// if its not an empty space
-					if(!sameColor(board[y - 1][x + 2]))
+				if(board[y - 1][x +2] != null) {// if it's not an empty space
+					if(sameColor(board[y - 1][x + 2])) {
+						this.canTarget.add(new Coordinate(x + 2, y - 1));
+					} else {
 						this.targeting.add(new Coordinate(x + 2, y - 1));
+					}
 				} else {
 					this.targeting.add(new Coordinate(x + 2, y - 1));
 				}
@@ -65,8 +74,11 @@ public class Knight extends Piece {
 			// upper
 			if(y + 1 <= board.length - 1) {
 				if(board[y + 1][x - 2] != null) {
-					if(!sameColor(board[y + 1][x - 2]))
+					if(sameColor(board[y + 1][x - 2])) {
+						this.canTarget.add(new Coordinate(x - 2, y + 1));
+					} else {
 						this.targeting.add(new Coordinate(x - 2, y + 1));
+					}
 				} else {
 					this.targeting.add(new Coordinate(x - 2, y + 1));
 				}
@@ -74,9 +86,12 @@ public class Knight extends Piece {
 			
 			// lower
 			if(y - 1 >= 0) {// if not out of bounds
-				if(board[y - 1][x - 2] != null) {// if its not an empty space
-					if(!sameColor(board[y - 1][x - 2]))
+				if(board[y - 1][x - 2] != null) {// if it's not an empty space
+					if(sameColor(board[y - 1][x - 2])) {
+						this.canTarget.add(new Coordinate(x - 2, y - 1));
+					} else {
 						this.targeting.add(new Coordinate(x - 2, y - 1));
+					}
 				} else {
 					this.targeting.add(new Coordinate(x - 2, y - 1));
 				}
@@ -92,8 +107,11 @@ public class Knight extends Piece {
 			// right
 			if(x + 1 <= board[0].length - 1) {
 				if(board[y + 2][x + 1] != null) {
-					if(!sameColor(board[y + 2][x + 1]))
+					if(sameColor(board[y + 2][x + 1])) {
+						this.canTarget.add(new Coordinate(x + 1, y + 2));
+					} else {
 						this.targeting.add(new Coordinate(x + 1, y + 2));
+					}
 				} else {
 					this.targeting.add(new Coordinate(x + 1, y + 2));
 				}
@@ -101,9 +119,12 @@ public class Knight extends Piece {
 			
 			// left
 			if(x - 1 >= 0) {// if not out of bounds
-				if(board[y + 2][x - 1] != null) {// if its not an empty space
-					if(!sameColor(board[y + 2][x - 1]))
+				if(board[y + 2][x - 1] != null) {// if it's not an empty space
+					if(sameColor(board[y + 2][x - 1])) {
+						this.canTarget.add(new Coordinate(x - 1, y + 2));
+					} else {
 						this.targeting.add(new Coordinate(x - 1, y + 2));
+					}
 				} else {
 					this.targeting.add(new Coordinate(x - 1, y + 2));
 				}
@@ -119,8 +140,11 @@ public class Knight extends Piece {
 			// right
 			if(x + 1 < board[0].length) {
 				if(board[y - 2][x + 1] != null) {
-					if(!sameColor(board[y - 2][x + 1]))
+					if(sameColor(board[y - 2][x + 1])) {
+						this.canTarget.add(new Coordinate(x + 1, y - 2));
+					} else {
 						this.targeting.add(new Coordinate(x + 1, y - 2));
+					}
 				} else {
 					this.targeting.add(new Coordinate(x + 1, y - 2));
 				}
@@ -128,9 +152,12 @@ public class Knight extends Piece {
 			
 			// left
 			if(x - 1 >= 0) {// if not out of bounds
-				if(board[y - 2][x - 1] != null) {// if its not an empty space
-					if(!sameColor(board[y - 2][x - 1]))
+				if(board[y - 2][x - 1] != null) {// if it's not an empty space
+					if(sameColor(board[y - 2][x - 1])) {
+						this.canTarget.add(new Coordinate(x - 1, y - 2));
+					} else {
 						this.targeting.add(new Coordinate(x - 1, y - 2));
+					}
 				} else {
 					this.targeting.add(new Coordinate(x - 1, y - 2));
 				}
