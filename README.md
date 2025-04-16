@@ -1,0 +1,3 @@
+- This project is not completed, but it is a functional chess model that runs in the command-line. 
+- Moves should be input as standard chess terminology (kn4 -> knight to the square at (n, 4)).
+- After each valid move, it shows all current pieces' available moves.
